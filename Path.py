@@ -128,6 +128,9 @@ class Path:
         else:
             Exception("Sbagliato controlla!")
 
+    def get_len(self):
+        return 2*self.l1 + 2*self.r*math.pi + 2*self.l2
+
 
 #path = Path(10, 5, 2)
 #print(path.get_theta_r(10+2*2*math.pi/4))
