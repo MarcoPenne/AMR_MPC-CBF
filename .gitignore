@@ -139,3 +139,7 @@ cython_debug/
 .vscode
 
 c_generated_code
+
+videos
+
+results
