@@ -19,7 +19,7 @@ class Path:
 
         # first edge
         if s>=0 and s<self.l1:
-            return (s, 0)
+            return (s, 0.)
         # first arc
         elif s>=self.l1 and s< self.l1 + 2*self.r*math.pi/4:
             arc = s - self.l1
@@ -108,7 +108,7 @@ class Path:
         elif s>= self.l1 + 2*self.r*math.pi/4 + self.l2 and s < self.l1 + self.r*math.pi + self.l2:
             arc = s - (self.l1 + 2*self.r*math.pi/4 + self.l2)
             alpha = arc/self.r
-            return math.pi+alpha
+            return math.pi/2+alpha
         # third edge
         elif s>= self.l1 + self.r*math.pi + self.l2 and s < 2*self.l1 + self.r*math.pi + self.l2:
             return math.pi
