@@ -6,17 +6,19 @@ from CarModel import CarModel
 from Path import Path
 import time
 import matplotlib.pyplot as plt
+from utils import *
 
-Tf = 1.0  # prediction horizon
-N = 50  # number of discretization steps
+Tf = 1.5  # prediction horizon
+N = int(Tf*50)  # number of discretization steps
 T = 30.00  # maximum simulation time[s]
-sref_N = 3  # reference for final reference progress
+sref_N = Tf*2  # reference for final reference progress
 
 path = Path(10, 5, 2)
-car_model = CarModel(path, 1, 0.5, 0.1)
+car_model = CarModel(path, 1, 0.5, 0.02)
 model = car_model.model
 ocp = AcadosOcp()
 ocp.model = model
+print(model)
 
 # define constraint
 #model_ac.con_h_expr = constraint.expr
@@ -32,13 +34,12 @@ ocp.dims.N = N
 #nsh = 2
 
 # set cost
-Q = np.diag([ 1, 1e-3, 1e-3])
-R = np.eye(nu)
-print(R)
+Q = np.diag([ 10, 1, 0])
+R = np.eye(nu)*1e-1
 #R[0, 0] = 1
 #R[1, 1] = 1
 
-Qe = np.diag([ 1, 1e-3, 1e-3])
+Qe = np.diag([ 10, 1, 0])
 
 ocp.cost.cost_type = "LINEAR_LS"
 ocp.cost.cost_type_e = "LINEAR_LS"
@@ -60,44 +61,42 @@ Vx_e = np.zeros((ny_e, nx))
 Vx_e[:nx, :nx] = np.eye(nx)
 ocp.cost.Vx_e = Vx_e
 
+
+#
+
 #ocp.cost.zl = 100 * np.ones((ns,))
 #ocp.cost.Zl = 0 * np.ones((ns,))
 #ocp.cost.zu = 100 * np.ones((ns,))
 #ocp.cost.Zu = 0 * np.ones((ns,))
 
 # set intial references
-ocp.cost.yref = np.array([1, 0, 0, 0, 0])
+ocp.cost.yref = np.array([0, 0, 0, 0, 0])
 ocp.cost.yref_e = np.array([0, 0, 0])
 
 # setting constraints
 ocp.constraints.lbx = np.array([-2])
 ocp.constraints.ubx = np.array([2])
 ocp.constraints.idxbx = np.array([1])
-ocp.constraints.lbu = np.array([-2, -1])
-ocp.constraints.ubu = np.array([2, 1])
+ocp.constraints.lbu = np.array([-4, -2])
+ocp.constraints.ubu = np.array([4, 2])
 ocp.constraints.idxbu = np.array([0, 1])
 # ocp.constraints.lsbx=np.zero s([1])
 # ocp.constraints.usbx=np.zeros([1])
 # ocp.constraints.idxsbx=np.array([1])
 
-# ocp.constraints.lh = np.array(
-#     [
-#         constraint.along_min,
-#         constraint.alat_min,
-#         model.n_min,
-#         model.throttle_min,
-#         model.delta_min,
-#     ]
-# )
-# ocp.constraints.uh = np.array(
-#     [
-#         constraint.along_max,
-#         constraint.alat_max,
-#         model.n_max,
-#         model.throttle_max,
-#         model.delta_max,
-#     ]
-# )
+#  Set CBF
+#ocp.model.con_h_expr = 
+
+ocp.constraints.lh = np.array(
+    [
+        0
+    ]
+)
+ocp.constraints.uh = np.array(
+    [
+        1e15
+    ]
+)
 # ocp.constraints.lsh = np.zeros(nsh)
 # ocp.constraints.ush = np.zeros(nsh)
 # ocp.constraints.idxsh = np.array([0, 2])
@@ -217,6 +216,7 @@ Nsim = int(T * N / Tf)
 # initialize data structs
 simX = np.ndarray((Nsim, nx))
 simU = np.ndarray((Nsim, nu))
+simX_horizon = np.ndarray((Nsim, N, nx))
 s0 = 0
 tcomp_sum = 0
 tcomp_max = 0
@@ -232,6 +232,10 @@ for i in range(Nsim):
     yref_N = np.array([sref, 0, 0])
     # yref_N=np.array([0,0,0,0,0,0])
     acados_solver.set(N, "yref", yref_N)
+
+    #for j in range(N):
+    #    print(acados_solver.get(j, 'x'))
+        #acados_solver.set(j, "con_h_expr", acados_solver.get(j, 'x'))
 
     # solve ocp
     t = time.time()
@@ -254,6 +258,8 @@ for i in range(Nsim):
         simX[i, j] = x0[j]
     for j in range(nu):
         simU[i, j] = u0[j]
+    for j in range(N):
+        simX_horizon[i, j, :] = acados_solver.get(j, 'x')
 
     # update initial condition
     x0 = acados_solver.get(1, "x")
@@ -291,5 +297,13 @@ def plotRes(simX,simU,t):
 
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
+
+time_now = datetime.datetime.now()
+folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
+os.mkdir('results/' + folder)
+
 plotRes(simX, simU, t)
-plt.show()
+plt.savefig('results/' + folder + "/plots.png")
+#plt.show()
+# THIS IS A BIT SLOW
+renderVideo(simX, simU, simX_horizon, t, car_model, path, folder)

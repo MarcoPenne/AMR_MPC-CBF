@@ -12,7 +12,7 @@ class CarModel:
         self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, dT)
 
 
-def export_car_ode_model(path, l1, l2):
+def export_car_ode_model(path, l1, l2, dT):
 
     model_name = 'car_ode'
 
@@ -23,23 +23,11 @@ def export_car_ode_model(path, l1, l2):
     for i, s in enumerate(s0):
         kapparef[i] = path.get_k(s)
     
-    # [s0, _, _, _, kapparef] = getTrack(track)
-    # length = len(s0)
-    # pathlength = s0[-1]
-    # # copy loop to beginning and end
-    # s0 = np.append(s0, [s0[length - 1] + s0[1:length]])
-    # kapparef = np.append(kapparef, kapparef[1:length])
-    # s0 = np.append([-s0[length - 2] + s0[length - 81 : length - 2]], s0)
-    # kapparef = np.append(kapparef[length - 80 : length - 1], kapparef)
-
     # compute spline interpolations
     kapparef_s = interpolant("kapparef_s", "bspline", [s0], kapparef)
-    print(kapparef_s)
-    print(kapparef_s(5))
-    print(kapparef_s(10.1))
 
     # set up states & controls
-    l      = MX.sym('l')
+    l = MX.sym('l')
     s = MX.sym('s')
     theta_tilde = MX.sym('theta_tilde')
     
@@ -82,12 +70,19 @@ def export_car_ode_model(path, l1, l2):
     model.p = p
     model.name = model_name
 
+    obs = [6., 0.1, 0.]
+    x_t_plus_1 = x + vertcat(f_expl)*dT
+    h_t = ((s-obs[0])**4/(l1)**4) + ((l-obs[1])**4/(l2)**4) - 1 
+    h_t_plus_1 = ((x_t_plus_1[0] - obs[0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[1])**4/(l2)**4) - 1
+    gamma = 1.
+    model.con_h_expr = h_t_plus_1 - h_t + gamma * h_t
+
     return model
 
 
 def export_car_ode_model_with_discrete_rk4(path, l1, l2, dT):
 
-    model = export_car_ode_model(path, l1, l2)
+    model = export_car_ode_model(path, l1, l2, dT)
 
     x = model.x
     u = model.u
@@ -103,6 +98,16 @@ def export_car_ode_model_with_discrete_rk4(path, l1, l2, dT):
 
     model.disc_dyn_expr = xf
     print("built RK4 for car model with dT = ", dT)
-    print(xf)
+    # print(xf)
+    # print()
+    # print(k1)
+    # print(k2)
+    # print(k3)
+    # print(k4)
+    
+    # print(xf.shape)
+    
+    #print( xf.set() )
+    
     return model
 
