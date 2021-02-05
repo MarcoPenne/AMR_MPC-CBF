@@ -44,9 +44,12 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
     h = car_model.l1
     h2 = car_model.l2
     half_edge = car_model.l2/2
-    t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='blue')
+    t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)],  [x + half_edge*np.sin(theta)+(1/2)*h*np.cos(theta), y- half_edge*np.cos(theta)+(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='blue')
     plt.gca().add_patch(t1)
-
+    t1 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='blue')
+    plt.gca().add_patch(t1)
+    t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
+    plt.gca().add_patch(t1)
     
     for o in range(fixed_obstacles.shape[0]):
         obs = fixed_obstacles[o, :]
@@ -67,7 +70,7 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
     a = plt.axes([.48, .78, .2, .2], facecolor='y')
     a.set_ylabel('v')
     plt.plot(v)
-    plt.ylim((0, 4))
+    plt.ylim((-4, 4))
     plt.xticks([])
     #plt.yticks([])
 
