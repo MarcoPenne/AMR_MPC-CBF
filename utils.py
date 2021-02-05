@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import datetime
 import os
 from tqdm import tqdm
+from Path import Path
 
 def transformProj2Orig(s, l, theta_tilde, path):
     
@@ -10,7 +11,10 @@ def transformProj2Orig(s, l, theta_tilde, path):
     Y = np.zeros_like(s)
     THETA = np.zeros_like(s)
     for i in range(len(s)):
-        (x1, y1) = path(s[i])
+        #print(s[i])
+        res = path(s[i])
+        #print(res)
+        (x1, y1) = res
         theta_r = path.get_theta_r(s[i])
         
         x = x1 - np.sin(theta_r)*l[i]
@@ -23,7 +27,7 @@ def transformProj2Orig(s, l, theta_tilde, path):
         THETA[i] = theta
     return (X, Y, THETA)
 
-def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, path):
+def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles, path):
     plt.figure()
     plt.xlim((-4, 14))
     plt.ylim((-2, 12))
@@ -43,15 +47,17 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, path):
     t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='blue')
     plt.gca().add_patch(t1)
 
-    obs = [6., 0.1, 0.]
-    obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
-    x = obs[0][0]
-    y = obs[1][0]
-    theta = obs[2][0]
-    t2 = plt.Polygon([[x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)],  [x + half_edge*np.sin(theta)+(1/2)*h*np.cos(theta), y- half_edge*np.cos(theta)+(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
-    plt.gca().add_patch(t2)
-    t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
-    plt.gca().add_patch(t2)
+    
+    for o in range(fixed_obstacles.shape[0]):
+        obs = fixed_obstacles[o, :]
+        obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
+        x = obs[0][0]
+        y = obs[1][0]
+        theta = obs[2][0]
+        t2 = plt.Polygon([[x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)],  [x + half_edge*np.sin(theta)+(1/2)*h*np.cos(theta), y- half_edge*np.cos(theta)+(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
+        plt.gca().add_patch(t2)
+        t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
+        plt.gca().add_patch(t2)
 
     #for i in range(X_horizon.shape[0]):
     (_x, _y, _theta) = transformProj2Orig(X_horizon[:,0], X_horizon[:,1], X_horizon[:,2], path)
@@ -88,8 +94,31 @@ def drawPath(path):
 
     plt.plot(x, y, '-y', linewidth=0.5)
 
+    inner_path = Path(path.l1, path.l2, path.r - 2)
+    samples = np.arange(0., inner_path.get_len(), 0.1)
 
-def renderVideo(simX, simU, simX_horizon, t, car_model, path, folder):
+    coord = []
+    for s in samples:
+        coord += [inner_path(s)]
+
+    x = [c[0] for c in coord]
+    y = [c[1]+2 for c in coord]
+
+    plt.plot(x, y, '-k', linewidth=0.5)
+
+    ext_path = Path(path.l1, path.l2, path.r + 2)
+    samples = np.arange(0., ext_path.get_len(), 0.1)
+
+    coord = []
+    for s in samples:
+        coord += [ext_path(s)]
+
+    x = [c[0] for c in coord]
+    y = [c[1]-2 for c in coord]
+
+    plt.plot(x, y, '-k', linewidth=0.5)
+
+def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, path, folder):
     # load track
     s=simX[:,0]
     l=simX[:,1]
@@ -98,6 +127,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, path, folder):
     period = np.mean(np.diff(t))
     fr = int(np.around(1/period, decimals=0))
     
+    #print(s, l, theta_tilde)
     # transform data
     (x, y, theta) = transformProj2Orig(s, l, theta_tilde, path)
     
@@ -110,7 +140,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, path, folder):
             v = v[-input_len:]
             w = w[-input_len:]
 
-        savePlot(x[i], y[i], theta[i], v, w, simX_horizon[i, :, :],folder, i, car_model, path)
+        savePlot(x[i], y[i], theta[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, path)
         #plt.show()
     os.chdir('results/' + folder)
     os.system(f"ffmpeg -framerate {fr}"+" -i %04d.png -r 30 -pix_fmt yuv420p video.mp4")

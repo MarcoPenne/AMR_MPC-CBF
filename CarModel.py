@@ -4,21 +4,21 @@ from casadi import *
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, dT):
+    def __init__(self, path, l1, l2, fixed_obstacles, dT, n_lap):
         self.path = path
         self.l1 = l1
         self.l2 = l2
         self.dT = dT
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, dT)
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap)
 
 
-def export_car_ode_model(path, l1, l2, dT):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
 
     model_name = 'car_ode'
 
     # load track parameters
     pathlength = path.get_len()
-    s0 = np.arange(0., pathlength, 0.05)
+    s0 = np.arange(0., n_lap*pathlength, 0.05)
     kapparef = np.zeros_like(s0)
     for i, s in enumerate(s0):
         kapparef[i] = path.get_k(s)
@@ -70,19 +70,32 @@ def export_car_ode_model(path, l1, l2, dT):
     model.p = p
     model.name = model_name
 
-    obs = [6., 0.1, 0.]
-    x_t_plus_1 = x + vertcat(f_expl)*dT
-    h_t = ((s-obs[0])**4/(l1)**4) + ((l-obs[1])**4/(l2)**4) - 1 
-    h_t_plus_1 = ((x_t_plus_1[0] - obs[0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[1])**4/(l2)**4) - 1
-    gamma = 1.
-    model.con_h_expr = h_t_plus_1 - h_t + gamma * h_t
+    obs = fixed_obstacles
+    for lap in range(1, n_lap):
+        lap_vector = np.zeros_like(obs)
+        lap_vector[:, 0] = lap*path.get_len()
+        obs = np.concatenate((obs, obs+lap_vector), axis=0)
+
+    #print(obs)
+
+    x_t_plus_1 = x + f_expl*dT
+
+    for o in range(obs.shape[0]):
+        h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - 5
+        h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - 5
+    
+        gamma = 0.1
+        if o==0:
+            model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
+        else:
+            model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, dT):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap):
 
-    model = export_car_ode_model(path, l1, l2, dT)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap)
 
     x = model.x
     u = model.u

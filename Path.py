@@ -13,10 +13,13 @@ class Path:
     def __call__(self, s):
         s = float(s)
         completed_lap = 0
+        #print(s)
         while s >= 2*self.l1 + 2*self.r*math.pi + 2*self.l2:
             completed_lap += 1
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
-
+        while s<0:
+            s = s + (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
+        #print(s)
         # first edge
         if s>=0 and s<self.l1:
             return (s, 0.)
@@ -58,6 +61,8 @@ class Path:
         while s >= 2*self.l1 + 2*self.r*math.pi + 2*self.l2:
             completed_lap += 1
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
+        while s<0:
+            s = s + (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
 
         # first edge
         if s>=0 and s<self.l1:
@@ -92,6 +97,8 @@ class Path:
         while s >= 2*self.l1 + 2*self.r*math.pi + 2*self.l2:
             completed_lap += 1
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
+        while s<0:
+            s = s + (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
 
         # first edge
         if s>=0 and s<self.l1:
