@@ -71,10 +71,16 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
     model.name = model_name
 
     obs = fixed_obstacles
+    lap_vector = np.zeros_like(obs)
+    lap_vector[:, 0] = path.get_len()
+    tmp_obs = fixed_obstacles
+    obs = np.concatenate((obs, tmp_obs - lap_vector), axis=0)
+
     for lap in range(1, n_lap):
-        lap_vector = np.zeros_like(obs)
+        lap_vector = np.zeros_like(fixed_obstacles)
         lap_vector[:, 0] = lap*path.get_len()
-        obs = np.concatenate((obs, obs+lap_vector), axis=0)
+        tmp_obs = fixed_obstacles
+        obs = np.concatenate((obs, tmp_obs + lap_vector), axis=0)
 
     #print(obs)
 

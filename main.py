@@ -17,9 +17,13 @@ n_lap = 2
 
 path = Path(10, 5, 2)
 
-fixed_obstacles = np.array([[6., 0.1, 0.], 
+fixed_obstacles = np.array([[6., 0.1, 0.],
+                            [13., -0.1, 0.],
                             [20., 0.2, 0.],
-                            [35., 0.1, 0.]])
+                            [25., -0.1, 0.],
+                            [30., -0.1, 0.],
+                            [35., 0.1, 0.],
+                            [41., -0.1, 0.]])
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap)
 model = car_model.model
 ocp = AcadosOcp()
@@ -42,7 +46,7 @@ R = np.eye(nu)*1e-1
 #R[0, 0] = 1
 #R[1, 1] = 1
 
-Qe = np.diag([ 10, 1, 0])
+Qe = np.diag([ 10, 1, 1])
 
 ocp.cost.cost_type = "LINEAR_LS"
 ocp.cost.cost_type_e = "LINEAR_LS"
@@ -90,14 +94,14 @@ ocp.constraints.idxbu = np.array([0, 1])
 #  Set CBF
 #ocp.model.con_h_expr = 
 
-ocp.constraints.lh = np.zeros(n_lap * fixed_obstacles.shape[0])
-ocp.constraints.uh = np.ones(n_lap * fixed_obstacles.shape[0])*1e15
+ocp.constraints.lh = np.zeros((1+n_lap) * fixed_obstacles.shape[0])
+ocp.constraints.uh = np.ones((1+n_lap) * fixed_obstacles.shape[0])*1e15
 # ocp.constraints.lsh = np.zeros(nsh)
 # ocp.constraints.ush = np.zeros(nsh)
 # ocp.constraints.idxsh = np.array([0, 2])
 
 # set intial condition
-ocp.constraints.x0 = np.array([1., -1.3, -80*np.pi/180])
+ocp.constraints.x0 = np.array([-0.5, -1.3, -80*np.pi/180])
 #
 
 # set QP solver and integration
@@ -197,7 +201,6 @@ def plotRes(simX,simU,t):
     plt.legend(['s','l','theta_tilde'])
     plt.grid(True)
 
-
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 time_now = datetime.datetime.now()
@@ -207,5 +210,6 @@ os.mkdir('results/' + folder)
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
 #plt.show()
+
 # THIS IS A BIT SLOW
 renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, path, folder)
