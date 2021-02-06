@@ -49,7 +49,15 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
     z = vertcat([])
 
     # parameters
-    p = vertcat([])
+    s_obs1 = MX.sym('s_obs1')
+    l_obs1 = MX.sym('l_obs1')
+    theta_tilde_obs1 = MX.sym('theta_tilde_obs1')
+    v_obs1 = MX.sym('v_obs1')
+    s_obs2 = MX.sym('s_obs2')
+    l_obs2 = MX.sym('l_obs2')
+    theta_tilde_obs2 = MX.sym('theta_tilde_obs2')
+    v_obs2 = MX.sym('v_obs2')
+    p = vertcat(s_obs1, l_obs1, theta_tilde_obs1, v_obs1, s_obs2, l_obs2, theta_tilde_obs2, v_obs2)
     
     # dynamics
     f_expl = vertcat((v1  * cos(theta_tilde))/(1 - kapparef_s(s)*l),
@@ -70,31 +78,46 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
     model.p = p
     model.name = model_name
 
-    obs = fixed_obstacles
-    lap_vector = np.zeros_like(obs)
-    lap_vector[:, 0] = path.get_len()
-    tmp_obs = fixed_obstacles
-    obs = np.concatenate((obs, tmp_obs - lap_vector), axis=0)
-
-    for lap in range(1, n_lap):
-        lap_vector = np.zeros_like(fixed_obstacles)
-        lap_vector[:, 0] = lap*path.get_len()
+    obs=None
+    if fixed_obstacles!=None:
+        obs = fixed_obstacles
+        lap_vector = np.zeros_like(obs)
+        lap_vector[:, 0] = path.get_len()
         tmp_obs = fixed_obstacles
-        obs = np.concatenate((obs, tmp_obs + lap_vector), axis=0)
+        obs = np.concatenate((obs, tmp_obs - lap_vector), axis=0)
 
-    #print(obs)
+        for lap in range(1, n_lap):
+            lap_vector = np.zeros_like(fixed_obstacles)
+            lap_vector[:, 0] = lap*path.get_len()
+            tmp_obs = fixed_obstacles
+            obs = np.concatenate((obs, tmp_obs + lap_vector), axis=0)
 
     x_t_plus_1 = x + f_expl*dT
 
-    for o in range(obs.shape[0]):
-        h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - 5
-        h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - 5
-    
-        gamma = 0.1
-        if o==0:
+    gamma = 0.1
+
+    for lap in range(0, n_lap):
+        h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - 8
+        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs1+v_obs1*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs1)**4/(l2)**4) - 8
+        if lap==0:
             model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
         else:
             model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
+
+        h_t = ((s - (s_obs2+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs2)**4/(l2)**4) - 8
+        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs2+v_obs2*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs2)**4/(l2)**4) - 8
+        model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
+
+    if obs!=None:
+        for o in range(obs.shape[0]):
+            h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - 5
+            h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - 5
+        
+            
+            if o==0:
+                model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
+            else:
+                model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
     return model
 
