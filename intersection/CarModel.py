@@ -136,8 +136,8 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
             o = other_obstacles[i]
             o = other_path.get_cartesian_coords(o[0], o[1])
             
-            h_t = ( (x_car - o[0])**4 / (l1)**4 ) + ( (y_car-o[1])**4 / (l2)**4 ) - 1
-            h_t_plus_1 = ( (x_car_1 - o[0])**4 / (l1)**4 ) + ( (y_car_1 - o[1] )**4/ (l1)**4 ) - 1
+            h_t = ((x_car - o[0] )**4/(l1)**4) + ((y_car - o[1])**4/(l1)**4) - 1
+            h_t_plus_1 = ((x_car_1 - o[0])**4/(l1)**4) + ((y_car_1 - o[1])**4/(l1)**4) - 1
             
             if model.con_h_expr is not None:
                 model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)

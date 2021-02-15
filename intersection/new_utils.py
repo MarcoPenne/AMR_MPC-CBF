@@ -52,6 +52,7 @@ def drawObstacles(obs, path, car_model):
     x = obs[0][0]
     y = obs[1][0]
     theta = obs[2][0]
+    #print(x, y, theta)
     t2 = plt.Polygon([[x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)],  [x + half_edge*np.sin(theta)+(1/2)*h*np.cos(theta), y- half_edge*np.cos(theta)+(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
     plt.gca().add_patch(t2)
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
@@ -59,7 +60,7 @@ def drawObstacles(obs, path, car_model):
     
     delta = 0.025
     xrange = np.arange(-4, 14, delta)
-    yrange = np.arange(-2, 12, delta)
+    yrange = np.arange(-5.5, 12.5, delta)
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((X-x)**4 / h**4 ) + ((Y-y)**4 / h**4)

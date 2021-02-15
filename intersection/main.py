@@ -10,7 +10,7 @@ from new_utils import *
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 20.00  # maximum simulation time[s]
+T = 30.00  # maximum simulation time[s]
 sref_N = Tf*2.5  # reference for final reference progress
 
 n_lap = 3
@@ -28,8 +28,8 @@ fixed_obstacles1 = np.array([[6., 0.1, 0.],
                             [35., 0.1, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles1 = np.array([[7., 0.4, 0.],[13., -0.5, 0.]])
-fixed_obstacles2 = None#np.array([[7., 0.4, 0.]])
-
+fixed_obstacles2 = np.array([[15., 0.4, 0.],[27.5, -0.4, 0.]])
+ 
 moving_obstacles1 = None#np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 moving_obstacles2 = None#np.array([5., 0.0, 0.0, 1.])
 
