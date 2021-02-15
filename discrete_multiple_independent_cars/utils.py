@@ -54,6 +54,14 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
 
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+
     x = x2
     y = y2
     theta = theta2
@@ -64,6 +72,14 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
 
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+
     x = x3
     y = y3
     theta = theta3
@@ -73,6 +89,14 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     plt.gca().add_patch(t1)
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
+
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
     
     if fixed_obstacles is not None:
         for o in range(fixed_obstacles.shape[0]):
@@ -110,8 +134,8 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     #plt.show()
     plt.close()
 
-def drawObstacles(obs, path, car_model):
-    obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
+def drawObstacles(obs_frenet, path, car_model):
+    obs = transformProj2Orig([obs_frenet[0]], [obs_frenet[1]], [obs_frenet[2]], path)
     h = car_model.l1
     h2 = car_model.l2
     half_edge = car_model.l2/2
@@ -123,6 +147,14 @@ def drawObstacles(obs, path, car_model):
     plt.gca().add_patch(t2)
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
     plt.gca().add_patch(t2)
+
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
     
 def drawPath(path):
     samples = np.arange(0., path.get_len(), 0.1)
