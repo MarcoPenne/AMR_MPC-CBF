@@ -1,0 +1,13 @@
+type:"intersection_moving_obstacles"
+
+tf=1.2
+v=2.0
+
+moving_obstacles1 = np.array([5., 0.3, 0., 0.8])
+moving_obstacles2 = np.array([8., 0.0, 0.0, 0.6, 16., -0.1, 0., 0.6])
+
+x0 = np.array([0., 0., 0.])
+
+gamma=0.1
+
+h con -1
