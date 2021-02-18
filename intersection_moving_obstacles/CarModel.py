@@ -1,27 +1,22 @@
 from acados_template import AcadosModel
 from casadi import *
-from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver, AcadosSimSolver
-from casadi import SX, vertcat, sin, cos, Function
-import scipy.linalg
-
 #from casadi import SX, vertcat, sin, cos, Function
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap):
         self.path = path
         self.l1 = l1
         self.l2 = l2
         self.dT = dT
         self.other_path = other_path
-        self.name = name
         self.other_obstacles = other_obstacles
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap)
 
 
-def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap):
 
-    model_name = 'car_ode_'+name
+    model_name = 'car_ode'
 
     # load track parameters
     pathlength = path.get_len()
@@ -180,9 +175,9 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap):
 
-    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap)
 
     x = model.x
     u = model.u
@@ -211,82 +206,3 @@ def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_
     
     return model
 
-
-
-def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N, Tf, n_lap, x0, name):
-    dT = Tf/float(N)
-    car_model = CarModel(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
-    model = car_model.model
-    ocp = AcadosOcp()
-    ocp.model = model
-    #print(model)
-
-    # set dimensions
-    nx = model.x.size()[0]
-    nu = model.u.size()[0]
-    ny = nx + nu
-    ny_e = nx
-
-    ocp.dims.N = N
-
-    # set cost
-    Q = np.diag([ 10, 1, 0])
-    R = np.eye(nu)*1e-1
-
-    Qe = np.diag([ 10, 1, 1])
-
-    ocp.cost.cost_type = "LINEAR_LS"
-    ocp.cost.cost_type_e = "LINEAR_LS"
-    unscale = N / Tf
-
-    ocp.cost.W = unscale * scipy.linalg.block_diag(Q, R)
-    ocp.cost.W_e = Qe / unscale
-
-    Vx = np.zeros((ny, nx))
-    Vx[:nx, :nx] = np.eye(nx)
-    ocp.cost.Vx = Vx
-
-    Vu = np.zeros((ny, nu))
-    Vu[3, 0] = 1.0
-    Vu[4, 1] = 1.0
-    ocp.cost.Vu = Vu
-
-    Vx_e = np.zeros((ny_e, nx))
-    Vx_e[:nx, :nx] = np.eye(nx)
-    ocp.cost.Vx_e = Vx_e
-
-    # set intial references
-    ocp.cost.yref = np.array([0, 0, 0, 0, 0])
-    ocp.cost.yref_e = np.array([0, 0, 0])
-
-    ocp.parameter_values = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-
-    # setting constraints
-    ocp.constraints.lbx = np.array([-2])
-    ocp.constraints.ubx = np.array([2])
-    ocp.constraints.idxbx = np.array([1])
-    ocp.constraints.lbu = np.array([-4, -2])
-    ocp.constraints.ubu = np.array([4, 2])
-    ocp.constraints.idxbu = np.array([0, 1])
-
-    #  Set CBF
-    print(f"Created {model.con_h_expr.shape[0]} CBFs")
-    ocp.constraints.lh = np.zeros(model.con_h_expr.shape[0])
-    ocp.constraints.uh = np.ones(model.con_h_expr.shape[0])*1e15
-
-    # set intial condition
-    ocp.constraints.x0 = x0 
-
-    # set QP solver and integration
-    ocp.solver_options.tf = Tf
-    # ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
-    ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-    ocp.solver_options.nlp_solver_type = "SQP_RTI"
-    ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
-    ocp.solver_options.integrator_type = "DISCRETE"
-    ocp.solver_options.sim_method_num_stages = 4
-    ocp.solver_options.sim_method_num_steps = 3
-
-    # create solver
-    acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_"+name+".json")
-    return acados_solver, car_model

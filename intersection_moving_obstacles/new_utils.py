@@ -137,9 +137,6 @@ def renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1,
         if simX1 is not None:
             drawCar(x1[i], y1[i], theta1[i], simX_horizon1[i], car_model, path1, 'blue')
 
-        if simX2 is not None:
-            drawCar(x2[i], y2[i], theta2[i], simX_horizon2[i], car_model, path2, 'yellow')
-
         if fixed_obstacles1 is not None:
             for j in range(fixed_obstacles1.shape[0]):
                 drawObstacles(fixed_obstacles1[j], path1, car_model)
