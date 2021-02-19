@@ -1,0 +1,18 @@
+
+# intersection_moving_cars_sm
+
+Tf = 1.0  # prediction horizon
+N = int(Tf*50)  # number of discretization steps
+T = 70.0  # maximum simulation time[s]
+v1 = 1.5
+v2 = 2.5
+
+moving_obstacles1 = np.array([path1.get_len()/2 - np.pi - l2/2, 0.3, 0., 0.5, 
+                            path1.get_len() - np.pi - l2/2, 0.3, 0., 0.5])
+moving_obstacles2 = np.array([l2/2, 0.3, 0., 0.5,
+                            l2/2 + path2.get_len()/2, -0.3, 0.0, 0.5])
+
+x01 = np.array([0., 0., 0., 25., 0., 0.])
+
+
+gamma = 0.1
