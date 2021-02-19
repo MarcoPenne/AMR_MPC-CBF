@@ -8,11 +8,11 @@ import time
 import matplotlib.pyplot as plt
 from new_utils import *
 
-Tf = 1.5  # prediction horizon
+Tf = 0.9  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 30.0  # maximum simulation time[s]
+T = 70.0  # maximum simulation time[s]
 v1 = 2.5
-v2 = 1.5
+v2 = 1.0
 sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2  # reference for final reference progress
 
@@ -33,8 +33,8 @@ fixed_obstacles1 = np.array([[6., 0.1, 0.],
 fixed_obstacles1 = None#np.array([[7., 0.4, 0.],[13., -0.5, 0.]])
 fixed_obstacles2 = None#np.array([[15., 0.4, 0.],[27.5, -0.4, 0.]])
  
-moving_obstacles1 = np.array([5., 0.3, 0., 0.5])
-moving_obstacles2 = np.array([25., -0.3, 0.0, 0.5])
+moving_obstacles1 = np.array([5., 0.3, 0., 0.3])
+moving_obstacles2 = np.array([25., -0.3, 0.0, 0.3])
 
 x01 = np.array([0., 0., 0.])
 x02 = np.array([15., 0., 0.])
