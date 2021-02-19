@@ -8,10 +8,10 @@ import time
 import matplotlib.pyplot as plt
 from new_utils import *
 
-Tf = 1.5  # prediction horizon
+Tf = 1.2  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 30.0  # maximum simulation time[s]
-sref_N = Tf*2.5  # reference for final reference progress
+T = 70.0  # maximum simulation time[s]
+sref_N = Tf*2.0  # reference for final reference progress
 
 n_lap = 5
 
@@ -30,8 +30,8 @@ fixed_obstacles1 = np.array([[6., 0.1, 0.],
 fixed_obstacles1 = None#np.array([[7., 0.4, 0.],[13., -0.5, 0.]])
 fixed_obstacles2 = None#np.array([[15., 0.4, 0.],[27.5, -0.4, 0.]])
  
-moving_obstacles1 = np.array([5., 0.3, 0., 0.5])
-moving_obstacles2 = np.array([8., 0.0, 0.0, 0.5, 8+path2.get_len()/2, -0.1, 0., 0.5])
+moving_obstacles1 = np.array([5., 0.3, 0., 0.8])
+moving_obstacles2 = np.array([8., 0.0, 0.0, 0.6, 16., -0.1, 0., 0.6])
 
 car_model = CarModel(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, Tf/float(N), n_lap)
 model = car_model.model
