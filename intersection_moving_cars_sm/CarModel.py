@@ -8,7 +8,7 @@ import scipy.linalg
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
         self.path = path
         self.l1 = l1
         self.l2 = l2
@@ -16,10 +16,10 @@ class CarModel:
         self.other_path = other_path
         self.name = name
         self.other_obstacles = other_obstacles
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
 
 
-def export_car_ode_model(path, edge1, edge2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model(path, edge1, edge2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
 
     model_name = 'car_ode_'+name
 
@@ -154,8 +154,6 @@ def export_car_ode_model(path, edge1, edge2, fixed_obstacles, other_path, other_
     
     x_t_plus_1 = x + f_expl*dT
 
-    gamma = 0.1
-
     thetar_car1 = thetarref_s1(s1)
     x_car1 = xref_s1(s1) - sin(thetar_car1)*l1
     y_car1 = yref_s1(s1) + cos(thetar_car1)*l1
@@ -199,52 +197,52 @@ def export_car_ode_model(path, edge1, edge2, fixed_obstacles, other_path, other_
 
     # CBFs
     # First Car
-    h_t = ((x_car1 - x_obs1 )**4/(edge1)**4) + ((y_car1 - y_obs1)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_1 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car1 - x_obs1 )**4/(edge1)**4) + ((y_car1 - y_obs1)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_1 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(edge1)**4) - h_cbf
     if model.con_h_expr is None:
         model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
     else:
         model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car1 - x_obs2 )**4/(edge1)**4) + ((y_car1 - y_obs2)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_1 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car1 - x_obs2 )**4/(edge1)**4) + ((y_car1 - y_obs2)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_1 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car1 - x_obs3 )**4/(edge1)**4) + ((y_car1 - y_obs3)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_1 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car1 - x_obs3 )**4/(edge1)**4) + ((y_car1 - y_obs3)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_1 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car1 - x_obs4 )**4/(edge1)**4) + ((y_car1 - y_obs4)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_1 - (x_obs4+cos(theta_obs4)*v_obs4*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs4+sin(theta_obs4)*v_obs4*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car1 - x_obs4 )**4/(edge1)**4) + ((y_car1 - y_obs4)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_1 - (x_obs4+cos(theta_obs4)*v_obs4*dT))**4/(edge1)**4) + ((y_car_next_1 - (y_obs4+sin(theta_obs4)*v_obs4*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
     # Second Car
-    h_t = ((x_car2 - x_obs1 )**4/(edge1)**4) + ((y_car2 - y_obs1)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_2 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car2 - x_obs1 )**4/(edge1)**4) + ((y_car2 - y_obs1)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_2 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car2 - x_obs2 )**4/(edge1)**4) + ((y_car2 - y_obs2)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_2 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car2 - x_obs2 )**4/(edge1)**4) + ((y_car2 - y_obs2)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_2 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car2 - x_obs3 )**4/(edge1)**4) + ((y_car2 - y_obs3)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_2 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car2 - x_obs3 )**4/(edge1)**4) + ((y_car2 - y_obs3)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_2 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car2 - x_obs4 )**4/(edge1)**4) + ((y_car2 - y_obs4)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_2 - (x_obs4+cos(theta_obs4)*v_obs4*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs4+sin(theta_obs4)*v_obs4*dT))**4/(edge1)**4) - 1
+    h_t = ((x_car2 - x_obs4 )**4/(edge1)**4) + ((y_car2 - y_obs4)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_2 - (x_obs4+cos(theta_obs4)*v_obs4*dT))**4/(edge1)**4) + ((y_car_next_2 - (y_obs4+sin(theta_obs4)*v_obs4*dT))**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
     # Between cars
-    h_t = ((x_car1 - x_car2 )**4/(edge1)**4) + ((y_car1 - y_car2)**4/(edge1)**4) - 1
-    h_t_plus_1 = ((x_car_next_1 - x_car_next_2)**4/(edge1)**4) + ((y_car_next_1 - y_car_next_2)**4/(edge1)**4) - 1
+    h_t = ((x_car1 - x_car2 )**4/(edge1)**4) + ((y_car1 - y_car2)**4/(edge1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_next_1 - x_car_next_2)**4/(edge1)**4) + ((y_car_next_1 - y_car_next_2)**4/(edge1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
 
-    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
 
     x = model.x
     u = model.u
@@ -275,9 +273,9 @@ def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_
 
 
 
-def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N, Tf, n_lap, x0, name):
+def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N, Tf, n_lap, x0, name, gamma, h_cbf):
     dT = Tf/float(N)
-    car_model = CarModel(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+    car_model = CarModel(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
     model = car_model.model
     ocp = AcadosOcp()
     ocp.model = model
