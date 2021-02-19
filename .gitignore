@@ -143,3 +143,5 @@ c_generated_code
 videos
 
 results
+
+*.json
