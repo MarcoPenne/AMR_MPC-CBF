@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 5.00  # maximum simulation time[s]
+T = 20.00  # maximum simulation time[s]
 v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
@@ -30,7 +30,7 @@ fixed_obstacles = None
 moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
 gamma = 1.
-h_cbf = 12
+h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
 ocp = AcadosOcp()
@@ -46,7 +46,7 @@ ny_e = nx
 ocp.dims.N = N
 
 # set cost
-Q = np.diag([ 100, 10, 0])
+Q = np.diag([ 100, 10, 10])
 R = np.eye(nu)*10
 
 Qe = np.diag([ 100, 10, 10])
@@ -94,20 +94,20 @@ ocp.constraints.lh = np.zeros(2*n_lap + nh)
 ocp.constraints.uh = np.ones(2*n_lap + nh)*1e15
 
 # set intial condition
-x0 = np.array([-0.5, -1.3, -80*np.pi/180])
+x0 = np.array([0.8, -1.3, -80*np.pi/180])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
 ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
 #ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-ocp.solver_options.nlp_solver_type = "SQP_RTI"
+ocp.solver_options.nlp_solver_type = "SQP"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "DISCRETE"
 ocp.solver_options.sim_method_num_stages = 4
 ocp.solver_options.sim_method_num_steps = 3
-ocp.solver_options.qp_solver_iter_max = 300
-ocp.solver_options.nlp_solver_max_iter = 300
+ocp.solver_options.qp_solver_iter_max = 800
+ocp.solver_options.nlp_solver_max_iter = 800
 
 # create solver
 acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
@@ -139,7 +139,7 @@ simU = np.ndarray((Nsim, nu))
 simX_horizon = np.ndarray((Nsim, N, nx))
 simObs_position = np.ndarray((Nsim, 1, 8))
 print(simObs_position.shape)
-s0 = 0
+s0 = 0.8
 tcomp_sum = 0
 tcomp_max = 0
 
