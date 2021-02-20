@@ -123,6 +123,7 @@ with open('results/'+folder+'/data.txt', 'w') as f:
     print(f'moving_obstacles = {moving_obstacles}', file=f)
     print(f'x0 = {x0}', file=f)
     print(f'gamma = {gamma}', file=f)
+    print(f'h_cbf = {h_cbf}', file=f)
     print(f'Q = {Q}', file=f)
     print(f'R = {R}', file=f)
     print(f'Qe = {Qe}', file=f)
