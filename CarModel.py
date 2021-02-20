@@ -4,15 +4,16 @@ from casadi import *
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, dT, n_lap):
+    def __init__(self, path, l1, l2, fixed_obstacles, dT, n_lap, gamma):
         self.path = path
         self.l1 = l1
         self.l2 = l2
         self.dT = dT
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap)
+        self.gamma = gamma
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, gamma)
 
 
-def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, gamma):
 
     model_name = 'car_ode'
 
@@ -94,8 +95,6 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
 
     x_t_plus_1 = x + f_expl*dT
 
-    gamma = 0.1
-
     for lap in range(0, n_lap):
         h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - 8
         h_t_plus_1 = ((x_t_plus_1[0] - (s_obs1+v_obs1*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs1)**4/(l2)**4) - 8
@@ -122,9 +121,9 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap):
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, gamma):
 
-    model = export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, gamma)
 
     x = model.x
     u = model.u
