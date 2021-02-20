@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 20.00  # maximum simulation time[s]
+T = 5.00  # maximum simulation time[s]
 v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
@@ -30,7 +30,8 @@ fixed_obstacles = None
 moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
 gamma = 1.
-car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma)
+h_cbf = 12
+car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
 ocp = AcadosOcp()
 ocp.model = model
@@ -202,4 +203,4 @@ plt.savefig('results/' + folder + "/plots.png")
 #plt.show()
 
 # THIS IS A BIT SLOW
-renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder)
+renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf)
