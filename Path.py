@@ -62,6 +62,7 @@ class Path:
             completed_lap += 1
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
         while s<0:
+            completed_lap -= 1
             s = s + (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
 
         # first edge
@@ -98,40 +99,41 @@ class Path:
             completed_lap += 1
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
         while s<0:
+            completed_lap -= 1
             s = s + (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
 
         # first edge
         if s>=0 and s<self.l1:
-            return 0.
+            return 0. + completed_lap*2*np.pi
         # first arc
         elif s>=self.l1 and s< self.l1 + 2*self.r*math.pi/4:
             arc = s - self.l1
             alpha = arc/self.r
-            return alpha
+            return alpha + completed_lap*2*np.pi
         # second edge
         elif s>= self.l1 + 2*self.r*math.pi/4 and s< self.l1 + 2*self.r*math.pi/4 + self.l2:
-            return math.pi/2
+            return math.pi/2 + completed_lap*2*np.pi
         # second arc
         elif s>= self.l1 + 2*self.r*math.pi/4 + self.l2 and s < self.l1 + self.r*math.pi + self.l2:
             arc = s - (self.l1 + 2*self.r*math.pi/4 + self.l2)
             alpha = arc/self.r
-            return math.pi/2+alpha
+            return math.pi/2+alpha + completed_lap*2*np.pi
         # third edge
         elif s>= self.l1 + self.r*math.pi + self.l2 and s < 2*self.l1 + self.r*math.pi + self.l2:
-            return math.pi
+            return math.pi + completed_lap*2*np.pi
         # third arc
         elif s>= 2*self.l1 + self.r*math.pi + self.l2 and s< 2*self.l1 + self.r*math.pi + self.l2 + 2*self.r*math.pi/4:
             arc = s - (2*self.l1 + self.r*math.pi + self.l2)
             alpha = arc/self.r
-            return math.pi+alpha
+            return math.pi+alpha + completed_lap*2*np.pi
         # fourth edge
         elif s>= 2*self.l1 + self.r*math.pi + self.l2 + 2*self.r*math.pi/4 and s< 2*self.l1 + self.r*math.pi + 2*self.l2 + 2*self.r*math.pi/4:
-            return (3/2)*math.pi
+            return (3/2)*math.pi + completed_lap*2*np.pi
         # fourth arc
         elif s>= 2*self.l1 + self.r*math.pi + 2*self.l2 + 2*self.r*math.pi/4 and s< 2*self.l1 + 2*self.r*math.pi + 2*self.l2:
             arc = s - (2*self.l1 + self.r*math.pi + 2*self.l2 + 2*self.r*math.pi/4)
             alpha = arc/self.r
-            return (3/2)*math.pi + alpha
+            return (3/2)*math.pi + alpha + completed_lap*2*np.pi
         else:
             Exception("Sbagliato controlla!")
 

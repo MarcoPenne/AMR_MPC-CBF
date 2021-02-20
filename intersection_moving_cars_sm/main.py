@@ -39,7 +39,24 @@ moving_obstacles2 = np.array([l2/2, 0.3, 0., 0.5,
                             l2/2 + path2.get_len()/2, -0.3, 0.0, 0.5])
 
 x01 = np.array([0., 0., 0., 25., 0., 0.])
-acados_solver1, car_model1 = create_problem(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, N, Tf, n_lap, x01, "1")
+gamma = 0.1
+h_cbf = 1
+acados_solver1, car_model1 = create_problem(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, N, Tf, n_lap, x01, "1", gamma, h_cbf)
+
+# Create log file
+time_now = datetime.datetime.now()
+folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
+os.mkdir('results/' + folder)
+with open('results/'+folder+'/data.txt', 'w') as f:
+    print(f"# {os.getcwd().split('/')[-1]}", file=f)
+    print(f'Tf = {Tf}', file=f)
+    print(f'v1 = {v1}', file=f)
+    print(f'v2 = {v2}', file=f)
+    print(f'moving_obstacles1 = {moving_obstacles1}', file=f)
+    print(f'moving_obstacles1 = {moving_obstacles2}', file=f)
+    print(f'x01 = {x01}', file=f)
+    print(f'gamma = {gamma}', file=f)
+    print(f'h_cbf = {h_cbf}', file=f)
 
 Nsim = int(T * N / Tf)
 # initialize data structs
@@ -69,7 +86,7 @@ for i in range(Nsim):
     for j in range(N):
         yref = np.array([s01 + (sref1 - s01) * j / N, l_disp1, 0,
                         s02 + (sref2 - s02) * j / N, l_disp2, 0,
-                        0, 0, 0, 0])
+                        v1, 0, v2, 0])
         acados_solver1.set(j, "yref", yref)
 
         p = np.zeros(16)
@@ -162,10 +179,6 @@ for i in range(Nsim):
     
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-time_now = datetime.datetime.now()
-folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
-os.mkdir('results/' + folder)
-
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
 #plt.show()
@@ -179,4 +192,4 @@ simX_horizon2 = simX_horizon[:, :, 3:]
 # THIS IS A BIT SLOW
 renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1, path1,
           simX2, simX2, simX_horizon2, fixed_obstacles2, simObs_position2, path2,
-          car_model1, t, folder)
+          car_model1, h_cbf, t, folder)
