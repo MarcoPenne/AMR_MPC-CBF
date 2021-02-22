@@ -27,7 +27,7 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([20., 0.1, 0., 1., 15., -0.1, 0., 1.])
+moving_obstacles = np.array([5., 0.2, 0., 1., 15., -0.2, 0., 1.])
 
 gamma = 0.5
 h_cbf = 3.
@@ -94,7 +94,7 @@ ocp.constraints.lh = np.zeros(2*n_lap + nh)
 ocp.constraints.uh = np.ones(2*n_lap + nh)*1e15
 
 # set intial condition
-x0 = np.array([-1., 0.6, 175*np.pi/180.])
+x0 = np.array([0,0,0])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
