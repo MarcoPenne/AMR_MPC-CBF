@@ -1,0 +1,12 @@
+single_car_base con gli ostacoli (v=0) e varie gamma (0.1, 0.5, 1.)
+
+single_car_base con gli ostacoli che si muovono e varie gamma (0.1, 0.5, 1.)
+continuos time come sopra
+
+# confronto
+discrete_multiple_independent_cars con ostacoli fissi con una gamma (scelta prima)
+discrete_multiple_autonomous_cars con stessi ostacoli fissi con una gamma (scelta prima)
+
+# confronto stessi parametri
+intersection_moving_cars (con 4 ostacoli, da fare) 
+intersection_moving_cars_sm
