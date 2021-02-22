@@ -27,10 +27,10 @@ def transformProj2Orig(s, l, theta_tilde, path):
         THETA[i] = theta
     return (X, Y, THETA)
 
-def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, folder, i, car_model, fixed_obstacles, moving_obstacles, path):
+def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, folder, i, car_model, fixed_obstacles, moving_obstacles, path, h_cbf):
     plt.figure()
-    plt.xlim((-3.5, 9.5))
-    plt.ylim((-1.5, 6.5))
+    plt.xlim((-4, 14))
+    plt.ylim((-2, 12))
     a = plt.gca()
     a.set_aspect('equal')
     #plt.plot(x, y, 'bo')
@@ -54,6 +54,14 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
 
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
+
     x = x2
     y = y2
     theta = theta2
@@ -64,6 +72,14 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
 
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
+
     x = x3
     y = y3
     theta = theta3
@@ -73,11 +89,19 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     plt.gca().add_patch(t1)
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
+
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
     
     if fixed_obstacles is not None:
         for o in range(fixed_obstacles.shape[0]):
             obs = fixed_obstacles[o, :]
-            drawObstacles(obs, path, car_model)
+            drawObstacles(obs, path, car_model, h_cbf)
 
     #for o in range(moving_obstacles.shape[0]):
     #    obs = moving_obstacles[o, :3]
@@ -110,7 +134,7 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     #plt.show()
     plt.close()
 
-def drawObstacles(obs, path, car_model):
+def drawObstacles(obs, path, car_model, h_cbf):
     obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
     h = car_model.l1
     h2 = car_model.l2
@@ -123,6 +147,14 @@ def drawObstacles(obs, path, car_model):
     plt.gca().add_patch(t2)
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
     plt.gca().add_patch(t2)
+
+    delta = 0.025
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-2, 12, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
     
 def drawPath(path):
     samples = np.arange(0., path.get_len(), 0.1)
@@ -136,7 +168,7 @@ def drawPath(path):
 
     plt.plot(x, y, '-y', linewidth=0.5)
 
-    inner_path = Path(path.l1, path.l2, path.r - 1)
+    inner_path = Path(path.l1, path.l2, path.r - 2)
     samples = np.arange(0., inner_path.get_len(), 0.1)
 
     coord = []
@@ -144,11 +176,11 @@ def drawPath(path):
         coord += [inner_path(s)]
 
     x = [c[0] for c in coord]
-    y = [c[1]+1 for c in coord]
+    y = [c[1]+2 for c in coord]
 
     plt.plot(x, y, '-k', linewidth=0.5)
 
-    ext_path = Path(path.l1, path.l2, path.r + 1)
+    ext_path = Path(path.l1, path.l2, path.r + 2)
     samples = np.arange(0., ext_path.get_len(), 0.1)
 
     coord = []
@@ -156,11 +188,11 @@ def drawPath(path):
         coord += [ext_path(s)]
 
     x = [c[0] for c in coord]
-    y = [c[1]-1 for c in coord]
+    y = [c[1]-2 for c in coord]
 
     plt.plot(x, y, '-k', linewidth=0.5)
 
-def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder):
+def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf):
     # load track
     s1=simX[:,0]
     l1=simX[:,1]
@@ -193,7 +225,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
         #moving_obstacles = simObs_position[i, 0, :]
         #moving_obstacles = simObs_position[i]
         #moving_obstacles = moving_obstacles.reshape((2, 4))
-        savePlot(x1[i], y1[i], theta1[i],x2[i], y2[i], theta2[i],x3[i], y3[i], theta3[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, None, path)
+        savePlot(x1[i], y1[i], theta1[i],x2[i], y2[i], theta2[i],x3[i], y3[i], theta3[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, None, path, h_cbf)
         #plt.show()
     os.chdir('results/' + folder)
     os.system(f"ffmpeg -framerate {fr}"+" -i %04d.png -r 30 -pix_fmt yuv420p video.mp4")
