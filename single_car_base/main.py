@@ -10,8 +10,8 @@ from utils import *
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 20.00  # maximum simulation time[s]
-v = 2.5
+T = 15.0  # maximum simulation time[s]
+v = 2
 sref_N = Tf*v  # reference for final reference progress
 
 n_lap = 3
@@ -94,14 +94,14 @@ ocp.constraints.lh = np.zeros(2*n_lap + nh)
 ocp.constraints.uh = np.ones(2*n_lap + nh)*1e15
 
 # set intial condition
-x0 = np.array([0.8, -1.3, -80*np.pi/180])
+x0 = np.array([0., 0., 0.])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
 ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
 #ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-ocp.solver_options.nlp_solver_type = "SQP"
+ocp.solver_options.nlp_solver_type = "SQP_RTI"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "DISCRETE"
 ocp.solver_options.sim_method_num_stages = 4
@@ -196,6 +196,9 @@ for i in range(Nsim):
     simObs_position[i, 0, :] = np.copy(moving_obstacles)
     moving_obstacles[0] += (sref_obs1 - moving_obstacles[0])/ N
     moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
+
+with open('results/'+folder+'/data.txt', 'a') as f:
+    print(f'computation_time = {tcomp_sum}', file=f)
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
