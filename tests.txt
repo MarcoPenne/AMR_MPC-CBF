@@ -1,12 +1,24 @@
-single_car_base con gli ostacoli (v=0) e varie gamma (0.1, 0.5, 1.)
+# test iniziali
+ostacoli sulla terza curva fermi, x0 strane per fare la manovra
+single_car_base (v_car=2, x0=0,0,0, T=15s) con gli ostacoli fermi (v=0) h=3 e varie gamma (0.1, 0.5, 1.)[oriz=2s] e vari orizzonti (0.5s, 1s, 2s, 5s)[gamma=0.5]
 
-single_car_base con gli ostacoli che si muovono e varie gamma (0.1, 0.5, 1.)
+single_car_base (v_car=2, x0=0,0,0, T=15s) con gli ostacoli che si muovono (v_obs=1) e varie gamma (0.1, 0.5, 1.)[oriz=2s] e vari orizzonti (0.5s, 1s, 2s, 5s)[gamma=0.5]
 continuos time come sopra
+
 
 # confronto
 discrete_multiple_independent_cars con ostacoli fissi con una gamma (scelta prima)
+# -----------> tutto pronto fino a qua
 discrete_multiple_autonomous_cars con stessi ostacoli fissi con una gamma (scelta prima)
 
 # confronto stessi parametri
 intersection_moving_cars (con 4 ostacoli, da fare) 
 intersection_moving_cars_sm
+
+
+
+# per tutti i test
+discretization step = 1/50
+Q = np.diag([ 100, 10, 10])
+R = np.eye(nu)*10
+Qe = np.diag([ 100, 10, 10])
