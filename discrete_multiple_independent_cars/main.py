@@ -93,9 +93,9 @@ for i in range(Nsim):
     sref3 = s03 + sref_N3
 
     for j in range(N):
-        yref1 = np.array([s01 + (sref1 - s01) * j / N, l1, 0, 0, 0])
-        yref2 = np.array([s02 + (sref2 - s02) * j / N, l2, 0, 0, 0])
-        yref3 = np.array([s03 + (sref3 - s03) * j / N, l3, 0, 0, 0])
+        yref1 = np.array([s01 + (sref1 - s01) * j / N, l1, 0, v1, 0])
+        yref2 = np.array([s02 + (sref2 - s02) * j / N, l2, 0, v2, 0])
+        yref3 = np.array([s03 + (sref3 - s03) * j / N, l3, 0, v3, 0])
         
         #s, l, theta, v
         p1 = np.array([s02 + (sref2 - s02) * j / N, x02[1], 0., v2,
