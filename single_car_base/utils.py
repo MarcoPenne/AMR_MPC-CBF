@@ -51,7 +51,7 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
     t1 = t1 = plt.Polygon([[x+ (1/2)*h*np.cos(theta), y+ (1/2)*h*np.sin(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='red')
     plt.gca().add_patch(t1)
     
-    if fixed_obstacles!=None:
+    if fixed_obstacles is not None:
         for o in range(fixed_obstacles.shape[0]):
             obs = fixed_obstacles[o, :]
             drawObstacles(obs, path, car_model, h_cbf)

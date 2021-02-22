@@ -8,18 +8,18 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 2.  # prediction horizon
+Tf = 1.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 7.0  # maximum simulation time[s]
-v = 2.5
+T = 17.0  # maximum simulation time[s]
+v = 2.
 sref_N = Tf*v  # reference for final reference progress
 
 n_lap = 3
 
 path = Path(10, 5, 2)
 
-fixed_obstacles = np.array([[6., 0.1, 0.],
-                            [13., -0.1, 0.],
+fixed_obstacles = np.array([[5., 0.2, 0.],
+                            [15., -0.2, 0.],
                             [20., 0.2, 0.],
                             [25., -0.1, 0.],
                             [30., -0.1, 0.],
@@ -27,9 +27,9 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([5., 0.2, 0., 0., 15., -0.2, 0., 0.])
+moving_obstacles = np.array([5., 0.2, 0., 0., 20., -0.2, 0., 0.])
 
-gamma = 0.5
+gamma = 0.9
 h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
@@ -46,10 +46,10 @@ ny_e = nx
 ocp.dims.N = N
 
 # set cost
-Q = np.diag([ 100, 10, 0])
-R = np.eye(nu)*10
+Q = np.diag([ 10, 1, 1])
 
-Qe = np.diag([ 100, 10, 10])
+R = np.diag([10, 10])
+Qe = np.diag([ 10, 1, 1])
 
 ocp.cost.cost_type = "LINEAR_LS"
 ocp.cost.cost_type_e = "LINEAR_LS"
@@ -105,6 +105,7 @@ ocp.solver_options.sim_method_num_stages = 4
 ocp.solver_options.sim_method_num_steps = 3
 ocp.solver_options.qp_solver_iter_max = 800
 ocp.solver_options.nlp_solver_max_iter = 800
+ocp.solver_options.regularize_method = "CONVEXIFY"
 
 # create solver
 acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
@@ -155,6 +156,10 @@ for i in range(Nsim):
 
         acados_solver.set(j, "yref", yref)
         acados_solver.set(j, "p", p)
+
+        acados_solver.print_statistics()
+
+
     yref_N = np.array([sref, 0, 0])
     p_N = np.array([sref_obs1, moving_obstacles[1], moving_obstacles[2], moving_obstacles[3], sref_obs2, moving_obstacles[5], moving_obstacles[6], moving_obstacles[7]])
 
