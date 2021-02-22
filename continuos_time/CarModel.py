@@ -5,14 +5,14 @@ from Path import Path
 
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, n_lap):
+    def __init__(self, path, l1, l2, fixed_obstacles, n_lap, gamma, h_cbf):
         self.path = path
         self.l1 = l1
         self.l2 = l2
-        self.model = export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap)
+        self.model = export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap, gamma, h_cbf)
 
 
-def export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap, gamma, h_cbf):
 
     model_name = 'car_ode'
 
@@ -94,10 +94,9 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap):
 
     s_car_dot = (v1  * cos(theta_tilde))/(1 - kapparef_s(s)*l)
     l_car_dot = v1 * sin(theta_tilde)
-    gamma = lambda hx: 15*hx
     if obs is not None:
         for o in range(obs.shape[0]):
-            h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - 5
+            h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - h_cbf
             h_t_dot = ( (4*((s-obs[o, 0])**3)*s_car_dot) / (l1)**4) + ( (4*((l-obs[o, 1])**3)*l_car_dot) / (l2)**4)
         
             if o==0:
@@ -106,7 +105,7 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap):
                 model.con_h_expr = vertcat(model.con_h_expr, h_t_dot + gamma(h_t))
 
     for lap in range(0, n_lap):
-        h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - 5
+        h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - h_cbf
         h_t_dot = ( (4*((s- (s_obs1+lap*path.get_len()))**3)*(s_car_dot - v_obs1)) / (l1)**4) + ( (4*((l-l_obs1)**3)*l_car_dot) / (l2)**4)
         
         if lap==0 and fixed_obstacles is None:
@@ -114,7 +113,7 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, n_lap):
         else:
             model.con_h_expr = vertcat(model.con_h_expr, h_t_dot + gamma(h_t))
 
-        h_t = ((s - (s_obs2+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs2)**4/(l2)**4) - 5
+        h_t = ((s - (s_obs2+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs2)**4/(l2)**4) - h_cbf
         h_t_dot = ( (4*((s- (s_obs2+lap*path.get_len()))**3)*(s_car_dot - v_obs2)) / (l1)**4) + ( (4*((l-l_obs2)**3)*l_car_dot) / (l2)**4)
         model.con_h_expr = vertcat(model.con_h_expr, h_t_dot + gamma(h_t))
 
