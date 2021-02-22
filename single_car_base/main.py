@@ -8,10 +8,10 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 1.  # prediction horizon
+Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
 T = 7.0  # maximum simulation time[s]
-v = 2
+v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
 n_lap = 3
@@ -27,7 +27,7 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([5., 0.2, 0., 1., 15., -0.2, 0., 1.])
+moving_obstacles = np.array([5., 0.2, 0., 0., 15., -0.2, 0., 0.])
 
 gamma = 0.5
 h_cbf = 3.
@@ -46,7 +46,7 @@ ny_e = nx
 ocp.dims.N = N
 
 # set cost
-Q = np.diag([ 100, 10, 10])
+Q = np.diag([ 100, 10, 0])
 R = np.eye(nu)*10
 
 Qe = np.diag([ 100, 10, 10])
@@ -86,12 +86,9 @@ ocp.constraints.ubu = np.array([4, 2])
 ocp.constraints.idxbu = np.array([0, 1])
 
 #  Set CBF
-nh = 0
-if fixed_obstacles!=None:
-    nh = (1+n_lap)
-
-ocp.constraints.lh = np.zeros(2*n_lap + nh)
-ocp.constraints.uh = np.ones(2*n_lap + nh)*1e15
+print(f"Barrier functions: {model.con_h_expr.shape[0]}")
+ocp.constraints.lh = np.zeros(model.con_h_expr.shape[0])
+ocp.constraints.uh = np.ones(model.con_h_expr.shape[0])*1e15
 
 # set intial condition
 x0 = np.array([0,0,0])
@@ -139,7 +136,7 @@ simU = np.ndarray((Nsim, nu))
 simX_horizon = np.ndarray((Nsim, N, nx))
 simObs_position = np.ndarray((Nsim, 1, 8))
 print(simObs_position.shape)
-s0 = 0.8
+s0 = x0[0]
 tcomp_sum = 0
 tcomp_max = 0
 
