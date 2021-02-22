@@ -81,7 +81,7 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, gamma, h_cbf)
     model.name = model_name
 
     obs=None
-    if fixed_obstacles!=None:
+    if fixed_obstacles is not None:
         obs = fixed_obstacles
         lap_vector = np.zeros_like(obs)
         lap_vector[:, 0] = path.get_len()
@@ -108,13 +108,13 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, gamma, h_cbf)
         h_t_plus_1 = ((x_t_plus_1[0] - (s_obs2+v_obs2*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs2)**4/(l2)**4) - h_cbf
         model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    if obs!=None:
+    if obs is not None:
         for o in range(obs.shape[0]):
             h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - h_cbf
             h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - h_cbf
         
             
-            if o==0:
+            if model.con_h_expr is None:
                 model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
             else:
                 model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
