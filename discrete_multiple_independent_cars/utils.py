@@ -27,7 +27,7 @@ def transformProj2Orig(s, l, theta_tilde, path):
         THETA[i] = theta
     return (X, Y, THETA)
 
-def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, folder, i, car_model, fixed_obstacles, moving_obstacles, path):
+def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, folder, i, car_model, fixed_obstacles, moving_obstacles, path, h_cbf):
     plt.figure()
     plt.xlim((-4, 14))
     plt.ylim((-2, 12))
@@ -60,7 +60,7 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
-    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
 
     x = x2
     y = y2
@@ -78,7 +78,7 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
-    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
 
     x = x3
     y = y3
@@ -96,12 +96,12 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
-    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
     
     if fixed_obstacles is not None:
         for o in range(fixed_obstacles.shape[0]):
             obs = fixed_obstacles[o, :]
-            drawObstacles(obs, path, car_model)
+            drawObstacles(obs, path, car_model, h_cbf)
 
     #for o in range(moving_obstacles.shape[0]):
     #    obs = moving_obstacles[o, :3]
@@ -134,7 +134,7 @@ def savePlot(x1, y1, theta1,x2, y2, theta2, x3, y3, theta3, v, w, X_horizon, fol
     #plt.show()
     plt.close()
 
-def drawObstacles(obs_frenet, path, car_model):
+def drawObstacles(obs_frenet, path, car_model, h_cbf):
     obs = transformProj2Orig([obs_frenet[0]], [obs_frenet[1]], [obs_frenet[2]], path)
     h = car_model.l1
     h2 = car_model.l2
@@ -154,7 +154,7 @@ def drawObstacles(obs_frenet, path, car_model):
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
-    plt.contour(X, Y, (F), [5], linestyles='dashed', linewidths=0.5, colors='blue')
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
     
 def drawPath(path):
     samples = np.arange(0., path.get_len(), 0.1)
@@ -192,7 +192,7 @@ def drawPath(path):
 
     plt.plot(x, y, '-k', linewidth=0.5)
 
-def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder):
+def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf):
     # load track
     s1=simX[:,0]
     l1=simX[:,1]
@@ -225,7 +225,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
         #moving_obstacles = simObs_position[i, 0, :]
         #moving_obstacles = simObs_position[i]
         #moving_obstacles = moving_obstacles.reshape((2, 4))
-        savePlot(x1[i], y1[i], theta1[i],x2[i], y2[i], theta2[i],x3[i], y3[i], theta3[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, None, path)
+        savePlot(x1[i], y1[i], theta1[i],x2[i], y2[i], theta2[i],x3[i], y3[i], theta3[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, None, path, h_cbf)
         #plt.show()
     os.chdir('results/' + folder)
     os.system(f"ffmpeg -framerate {fr}"+" -i %04d.png -r 30 -pix_fmt yuv420p video.mp4")

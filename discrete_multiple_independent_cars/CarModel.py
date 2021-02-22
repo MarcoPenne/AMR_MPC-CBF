@@ -7,15 +7,17 @@ from casadi import *
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, dT, n_lap, name):
+    def __init__(self, path, l1, l2, fixed_obstacles, dT, n_lap, name, gamma, h_cbf):
         self.path = path
         self.l1 = l1
         self.l2 = l2
         self.dT = dT
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, name)
+        self.gamma = gamma
+        self.h_cbf = h_cbf
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, name, gamma, h_cbf)
 
 
-def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name, gamma, h_cbf):
 
     model_name = 'car_ode_'+name
 
@@ -97,24 +99,22 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name):
 
     x_t_plus_1 = x + f_expl*dT
 
-    gamma = 0.1
-
     for lap in range(0, n_lap):
-        h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - 5
-        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs1+v_obs1*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs1)**4/(l2)**4) - 5
+        h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - h_cbf
+        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs1+v_obs1*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs1)**4/(l2)**4) - h_cbf
         if lap==0:
             model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
         else:
             model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-        h_t = ((s - (s_obs2+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs2)**4/(l2)**4) - 5
-        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs2+v_obs2*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs2)**4/(l2)**4) - 5
+        h_t = ((s - (s_obs2+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs2)**4/(l2)**4) - h_cbf
+        h_t_plus_1 = ((x_t_plus_1[0] - (s_obs2+v_obs2*dT +lap*path.get_len() ) )**4/(l1)**4) + ((x_t_plus_1[1] - l_obs2)**4/(l2)**4) - h_cbf
         model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
     if obs is not None:
         for o in range(obs.shape[0]):
-            h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - 5
-            h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - 5
+            h_t = ((s-obs[o, 0])**4/(l1)**4) + ((l-obs[o, 1])**4/(l2)**4) - h_cbf
+            h_t_plus_1 = ((x_t_plus_1[0] - obs[o, 0])**4/(l1)**4) + ((x_t_plus_1[1] - obs[o, 1])**4/(l2)**4) - h_cbf
           
             # if o==0:
             #     model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
@@ -124,9 +124,9 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name):
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, name):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_lap, name, gamma, h_cbf):
 
-    model = export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, name, gamma, h_cbf)
 
     x = model.x
     u = model.u
@@ -156,8 +156,8 @@ def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, dT, n_
     return model
 
 
-def create_problem(path, fixed_obstacles, N, Tf, n_lap, x0, name):
-    car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, name)
+def create_problem(path, fixed_obstacles, N, Tf, n_lap, x0, name, gamma, h_cbf):
+    car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, name, gamma, h_cbf)
     model = car_model.model
     ocp = AcadosOcp()
     ocp.model = model
@@ -172,10 +172,10 @@ def create_problem(path, fixed_obstacles, N, Tf, n_lap, x0, name):
     ocp.dims.N = N
 
     # set cost
-    Q = np.diag([ 10, 1, 0])
-    R = np.eye(nu)*1e-1
+    Q = np.diag([ 100, 10, 10])
+    R = np.eye(nu)*10
 
-    Qe = np.diag([ 10, 1, 1])
+    Qe = np.diag([ 100, 10, 10])
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
@@ -228,6 +228,8 @@ def create_problem(path, fixed_obstacles, N, Tf, n_lap, x0, name):
     ocp.solver_options.integrator_type = "DISCRETE"
     ocp.solver_options.sim_method_num_stages = 4
     ocp.solver_options.sim_method_num_steps = 3
+    #ocp.solver_options.qp_solver_iter_max = 800
+    #ocp.solver_options.nlp_solver_max_iter = 800
 
     # create solver
     acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_"+name+".json")

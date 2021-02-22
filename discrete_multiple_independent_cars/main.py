@@ -8,9 +8,9 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 2.5  # prediction horizon
+Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 30.00  # maximum simulation time[s]
+T = 0.5  # maximum simulation time[s]
 v1 = 2.5
 v2 = 2.
 v3 = 1.5
@@ -19,7 +19,7 @@ sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2
 sref_N3 = Tf*v3
 
-n_lap = 3
+n_lap = 10
 
 path = Path(10, 5, 2)
 
@@ -30,19 +30,45 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [30., -0.1, 0.],
                             [35., 0.1, 0.],
                             [41., -0.1, 0.]])
-fixed_obstacles = None
+#fixed_obstacles = None
 
 #moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 l1 = 0.
-l2 = 0.2
-l3 = -0.2
-x01 = np.array([20., l1, 0.])
-x02 = np.array([10., l2, 0.])
+l2 = 0.5
+l3 = -0.5
+x01 = np.array([15., l1, 0.])
+x02 = np.array([4., l2, 0.])
 x03 = np.array([0., l3, 0.])
 
-acados_solver1, car_model1 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x01, "1")
-acados_solver2, car_model2 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x02, "2")
-acados_solver3, car_model3 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x03, "3")
+gamma = 0.5
+h_cbf = 3
+acados_solver1, car_model1 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x01, "1", gamma, h_cbf)
+acados_solver2, car_model2 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x02, "2", gamma, h_cbf)
+acados_solver3, car_model3 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x03, "3", gamma, h_cbf)
+
+# Create log file
+time_now = datetime.datetime.now()
+folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
+os.mkdir('results/' + folder)
+with open('results/'+folder+'/data.txt', 'w') as f:
+    print(f"# {os.getcwd().split('/')[-1]}", file=f)
+    print(f'Tf = {Tf}', file=f)
+    print(f'v1 = {v1}', file=f)
+    print(f'v2 = {v2}', file=f)
+    print(f'v3 = {v3}', file=f)
+    print(f'fixed_obstacles = {fixed_obstacles}', file=f)
+    print(f'x01 = {x01}', file=f)
+    print(f'x02 = {x02}', file=f)
+    print(f'x03 = {x03}', file=f)
+    print(f'gamma = {gamma}', file=f)
+    print(f'h_cbf = {h_cbf}', file=f)
+    print(f'Q = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[:3, :3]}', file=f)
+    print(f'R = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[3:, 3:]}', file=f)
+    print(f'Q_e = {acados_solver1.acados_ocp.cost.W_e * (N/Tf)}', file=f)
+    print(f'qp_solver = {acados_solver1.acados_ocp.solver_options.qp_solver}', file=f)
+    print(f'nlp_solver_type = {acados_solver1.acados_ocp.solver_options.nlp_solver_type}', file=f)
+    print(f'qp_solver_iter_max = {acados_solver1.acados_ocp.solver_options.qp_solver_iter_max}', file=f)
+    print(f'nlp_solver_max_iter = {acados_solver1.acados_ocp.solver_options.nlp_solver_max_iter}', file=f)
 
 Nsim = int(T * N / Tf)
 nx = 3
@@ -170,15 +196,16 @@ for i in range(Nsim):
     #moving_obstacles[0] += (sref_obs1 - moving_obstacles[0])/ N
     #moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
 
+with open('results/'+folder+'/data.txt', 'a') as f:
+    print(f'computation_time = {tcomp_sum}', file=f)
+
+
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-time_now = datetime.datetime.now()
-folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
-os.mkdir('results/' + folder)
 
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
 #plt.show()
 
 # THIS IS A BIT SLOW
-renderVideo(simX, simU, simX_horizon, t, car_model1, fixed_obstacles, None, path, folder)
+renderVideo(simX, simU, simX_horizon, t, car_model1, fixed_obstacles, None, path, folder, h_cbf)
