@@ -8,9 +8,9 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 1.5  # prediction horizon
+Tf = 1.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 15.0  # maximum simulation time[s]
+T = 7.0  # maximum simulation time[s]
 v = 2
 sref_N = Tf*v  # reference for final reference progress
 
@@ -27,9 +27,9 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
+moving_obstacles = np.array([20., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
-gamma = 1.
+gamma = 0.5
 h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
@@ -94,14 +94,14 @@ ocp.constraints.lh = np.zeros(2*n_lap + nh)
 ocp.constraints.uh = np.ones(2*n_lap + nh)*1e15
 
 # set intial condition
-x0 = np.array([0., 0., 0.])
+x0 = np.array([-1., 0.6, 175*np.pi/180.])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
 ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
 #ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-ocp.solver_options.nlp_solver_type = "SQP_RTI"
+ocp.solver_options.nlp_solver_type = "SQP"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "DISCRETE"
 ocp.solver_options.sim_method_num_stages = 4
