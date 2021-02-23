@@ -1,9 +1,12 @@
 # test iniziali
 ostacoli sulla terza curva fermi, x0 strane per fare la manovra  -> fatti
 
-single_car_base (v_car=2.5, x0=0,0,0, T=15s) con gli ostacoli fermi (v=0) h=3 e varie gamma (0.1, 0.5, 1.)[oriz=2s] e vari orizzonti (0.5s, 0.75s, 1s, 2s, 5s)[gamma=0.5] (con RTI)
+single_car_base (v_car=2.5, x0=0,0,0, T=15s) con gli ostacoli fermi (v=0) h=3 e varie gamma (0.1, 0.5, 1.)[oriz=1.5s] e vari orizzonti (0.5s, 0.75s, 1s, 2s, 5s)[gamma=0.5] (con RTI)
+Q = np.diag([ 0, 10, 0])
+R = np.eye(nu)*10
+Qe = np.diag([ 0, 10, 0])
 
-single_car_base (v_car=2.5, x0=0,0,0, T=15s) con gli ostacoli che si muovono (v_obs=1) e varie gamma (0.1, 0.5, 1.)[oriz=2s] e vari orizzonti (0.5s, 0.75s, 1s, 2s, 5s)[gamma=0.5] (no RTI)
+single_car_base (v_car=2.5, x0=0,0,0, T=15s) con gli ostacoli che si muovono (v_obs=1) e varie gamma (0.1, 0.5, 1.)[oriz=1.5s] e vari orizzonti (0.5s, 0.75s, 1s, 2s, 5s)[gamma=0.5] (no RTI)
 continuos time come sopra (no RTI possibilmente)
 
 
