@@ -15,8 +15,9 @@ discrete_multiple_autonomous_cars con stessi ostacoli fissi con una gamma (scelt
 # confronto stessi parametri
 intersection_moving_cars (con 4 ostacoli, da fare) (con RTI)
 
-# -----------> tutto pronto fino a qua
 intersection_moving_cars_sm (con RTI)
+
+# -----------> tutto pronto fino a qua
 
 # dinamico
 discreto
