@@ -57,6 +57,13 @@ with open('results/'+folder+'/data.txt', 'w') as f:
     print(f'x01 = {x01}', file=f)
     print(f'gamma = {gamma}', file=f)
     print(f'h_cbf = {h_cbf}', file=f)
+    print(f'Q = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[:6, :6]}', file=f)
+    print(f'R = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[6:, 6:]}', file=f)
+    print(f'Q_e = {acados_solver1.acados_ocp.cost.W_e * (N/Tf)}', file=f)
+    print(f'qp_solver = {acados_solver1.acados_ocp.solver_options.qp_solver}', file=f)
+    print(f'nlp_solver_type = {acados_solver1.acados_ocp.solver_options.nlp_solver_type}', file=f)
+    print(f'qp_solver_iter_max = {acados_solver1.acados_ocp.solver_options.qp_solver_iter_max}', file=f)
+    print(f'nlp_solver_max_iter = {acados_solver1.acados_ocp.solver_options.nlp_solver_max_iter}', file=f)
 
 Nsim = int(T * N / Tf)
 # initialize data structs
@@ -176,6 +183,9 @@ for i in range(Nsim):
     moving_obstacles1[4] += (sref_obs2 - moving_obstacles1[4])/ N
     moving_obstacles2[0] += (sref_obs3 - moving_obstacles2[0])/ N
     moving_obstacles2[4] += (sref_obs4 - moving_obstacles2[4])/ N
+
+with open('results/'+folder+'/data.txt', 'a') as f:
+    print(f'computation_time = {tcomp_sum}', file=f)
     
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
