@@ -8,11 +8,11 @@ import time
 import matplotlib.pyplot as plt
 from new_utils import *
 
-Tf = 1.0  # prediction horizon
+Tf = 2.0  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 30.0  # maximum simulation time[s]
-v1 = 1.5
-v2 = 2.5
+T = 20.0  # maximum simulation time[s]
+v1 = 2
+v2 = 2
 sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2  # reference for final reference progress
 
@@ -33,13 +33,13 @@ fixed_obstacles1 = np.array([[6., 0.1, 0.],
 fixed_obstacles1 = None#np.array([[7., 0.4, 0.],[13., -0.5, 0.]])
 fixed_obstacles2 = None#np.array([[15., 0.4, 0.],[27.5, -0.4, 0.]])
  
-moving_obstacles1 = np.array([path1.get_len()/2 - np.pi - l2/2, 0.3, 0., 0.5, 
-                            path1.get_len() - np.pi - l2/2, 0.3, 0., 0.5])
-moving_obstacles2 = np.array([l2/2, 0.3, 0., 0.5,
-                            l2/2 + path2.get_len()/2, -0.3, 0.0, 0.5])
+moving_obstacles1 = np.array([path1.get_len() - np.pi - l2/2, 0.3, 0., 0.0, 
+                            path1.get_len() - np.pi - l2/2, 0.3, 0., 0.0])
+moving_obstacles2 = np.array([l2/2 + path2.get_len()/2, 0.3, 0., 0.0,
+                            l2/2 + path2.get_len()/2, -0.3, 0.0, 0.0])
 
-x01 = np.array([0., 0., 0., 25., 0., 0.])
-gamma = 0.1
+x01 = np.array([8.5 - 4.5 - np.pi + 3., 0., 0., 3.5, 0., 0.])
+gamma = 1
 h_cbf = 1
 acados_solver1, car_model1 = create_problem(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, N, Tf, n_lap, x01, "1", gamma, h_cbf)
 
@@ -83,6 +83,7 @@ tcomp_max = 0
 
 # simulate
 for i in range(Nsim):
+    print(f"Iteration {i}/{Nsim}")
     # update reference
     sref1 = s01 + sref_N1
     sref2 = s02 + sref_N2

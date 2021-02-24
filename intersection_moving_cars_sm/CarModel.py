@@ -290,10 +290,10 @@ def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N
     ocp.dims.N = N
 
     # set cost
-    Q = np.diag([ 10, 1, 0, 10, 1, 0])
-    R = np.eye(nu)*1e-1
+    Q = np.diag([ 100, 10, 10, 100, 10, 10])
+    R = np.diag([10, 10, 10, 10])#np.eye(nu)*1e-1
 
-    Qe = np.diag([ 10, 1, 1, 10, 1, 1])
+    Qe = np.diag([ 100, 10, 10, 100, 10, 10])
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
@@ -343,13 +343,15 @@ def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N
 
     # set QP solver and integration
     ocp.solver_options.tf = Tf
-    # ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+    #ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
     ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
     ocp.solver_options.integrator_type = "DISCRETE"
     ocp.solver_options.sim_method_num_stages = 4
     ocp.solver_options.sim_method_num_steps = 3
+    #ocp.solver_options.qp_solver_iter_max = 300
+    #ocp.solver_options.nlp_solver_max_iter = 300
 
     # create solver
     acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_"+name+".json")
