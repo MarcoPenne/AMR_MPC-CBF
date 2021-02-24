@@ -8,12 +8,12 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 2.5  # prediction horizon
+Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 0.500  # maximum simulation time[s]
+T = 60.  # maximum simulation time[s]
 v1 = 3.
-v2 = 1.
-v3 = 2.
+v2 = 2.
+v3 = 1.
 sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2
 sref_N3 = Tf*v3
@@ -24,17 +24,21 @@ n_lap = 10
 path = Path(10, 5, 2)
 
 fixed_obstacles = np.array([[6., 0.1, 0.],
-                            [13., -0.1, 0.],
                             [20., 0.2, 0.],
-                            [25., -0.1, 0.],
-                            [30., -0.1, 0.],
-                            [35., 0.1, 0.],
-                            [41., -0.1, 0.]])
+                            [35., 0.1, 0.]])
+
+# fixed_obstacles = np.array([[6., 0.1, 0.],
+#                             [13., -0.1, 0.],
+#                             [20., 0.2, 0.],
+#                             [25., -0.1, 0.],
+#                             [30., -0.1, 0.],
+#                             [35., 0.1, 0.],
+#                             [41., -0.1, 0.]])
 #fixed_obstacles = None
 
 #moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 gamma = 0.5
-h_cbf = 3.
+h_cbf = 5.
 car_model = CarModel(path, 1., 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
 ocp = AcadosOcp()

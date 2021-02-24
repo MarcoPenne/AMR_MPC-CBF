@@ -10,10 +10,10 @@ from utils import *
 
 Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 0.5  # maximum simulation time[s]
-v1 = 2.5
-v2 = 2.
-v3 = 1.5
+T = 60.  # maximum simulation time[s]
+v1 = 3.0
+v2 = 2.0
+v3 = 1.0
 
 sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2
@@ -24,12 +24,16 @@ n_lap = 10
 path = Path(10, 5, 2)
 
 fixed_obstacles = np.array([[6., 0.1, 0.],
-                            [13., -0.1, 0.],
                             [20., 0.2, 0.],
-                            [25., -0.1, 0.],
-                            [30., -0.1, 0.],
-                            [35., 0.1, 0.],
-                            [41., -0.1, 0.]])
+                            [35., 0.1, 0.]])
+
+# fixed_obstacles = np.array([[6., 0.1, 0.],
+#                             [13., -0.1, 0.],
+#                             [20., 0.2, 0.],
+#                             [25., -0.1, 0.],
+#                             [30., -0.1, 0.],
+#                             [35., 0.1, 0.],
+#                             [41., -0.1, 0.]])
 #fixed_obstacles = None
 
 #moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
@@ -41,7 +45,7 @@ x02 = np.array([4., l2, 0.])
 x03 = np.array([0., l3, 0.])
 
 gamma = 0.5
-h_cbf = 3
+h_cbf = 5.
 acados_solver1, car_model1 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x01, "1", gamma, h_cbf)
 acados_solver2, car_model2 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x02, "2", gamma, h_cbf)
 acados_solver3, car_model3 = create_problem(path, fixed_obstacles, N, Tf, n_lap, x03, "3", gamma, h_cbf)
