@@ -8,15 +8,15 @@ import time
 import matplotlib.pyplot as plt
 from new_utils import *
 
-Tf = 0.9  # prediction horizon
+Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 70.0  # maximum simulation time[s]
-v1 = 2.5
-v2 = 1.0
+T = 20.0  # maximum simulation time[s]
+v1 = 2.
+v2 = 2.
 sref_N1 = Tf*v1  # reference for final reference progress
 sref_N2 = Tf*v2  # reference for final reference progress
 
-n_lap = 5
+n_lap = 10
 
 l1=10
 l2 = 3
@@ -33,13 +33,41 @@ fixed_obstacles1 = np.array([[6., 0.1, 0.],
 fixed_obstacles1 = None#np.array([[7., 0.4, 0.],[13., -0.5, 0.]])
 fixed_obstacles2 = None#np.array([[15., 0.4, 0.],[27.5, -0.4, 0.]])
  
-moving_obstacles1 = np.array([5., 0.3, 0., 0.3])
-moving_obstacles2 = np.array([25., -0.3, 0.0, 0.3])
+moving_obstacles1 = np.array([path1.get_len() - np.pi - l2/2, 0.3, 0., 0.0, 
+                            path1.get_len() - np.pi - l2/2, 0.3, 0., 0.0])
+moving_obstacles2 = np.array([l2/2 + path2.get_len()/2, 0.3, 0., 0.0,
+                            l2/2 + path2.get_len()/2, -0.3, 0.0, 0.0])
 
-x01 = np.array([0., 0., 0.])
-x02 = np.array([15., 0., 0.])
-acados_solver1, car_model1 = create_problem(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, N, Tf, n_lap, x01, "1")
-acados_solver2, car_model1 = create_problem(path2, 1, 0.5, fixed_obstacles2, path1, fixed_obstacles1, N, Tf, n_lap, x02, "2")
+x01 = np.array([8.5 - 4.5 - np.pi + 3., 0., 0.])
+x02 = np.array([3.5, 0., 0.])
+
+gamma = 1.
+h_cbf = 1.
+acados_solver1, car_model1 = create_problem(path1, 1, 0.5, fixed_obstacles1, path2, fixed_obstacles2, N, Tf, n_lap, x01, "1", gamma, h_cbf)
+acados_solver2, car_model1 = create_problem(path2, 1, 0.5, fixed_obstacles2, path1, fixed_obstacles1, N, Tf, n_lap, x02, "2", gamma, h_cbf)
+
+# Create log file
+time_now = datetime.datetime.now()
+folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
+os.mkdir('results/' + folder)
+with open('results/'+folder+'/data.txt', 'w') as f:
+    print(f"# {os.getcwd().split('/')[-1]}", file=f)
+    print(f'Tf = {Tf}', file=f)
+    print(f'v1 = {v1}', file=f)
+    print(f'v2 = {v2}', file=f)
+    print(f'moving_obstacles1 = {moving_obstacles1}', file=f)
+    print(f'moving_obstacles2 = {moving_obstacles2}', file=f)
+    print(f'x01 = {x01}', file=f)
+    print(f'x02 = {x02}', file=f)
+    print(f'gamma = {gamma}', file=f)
+    print(f'h_cbf = {h_cbf}', file=f)
+    print(f'Q = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[:3, :3]}', file=f)
+    print(f'R = {(acados_solver1.acados_ocp.cost.W * (Tf/N))[3:, 3:]}', file=f)
+    print(f'Q_e = {acados_solver1.acados_ocp.cost.W_e * (N/Tf)}', file=f)
+    print(f'qp_solver = {acados_solver1.acados_ocp.solver_options.qp_solver}', file=f)
+    print(f'nlp_solver_type = {acados_solver1.acados_ocp.solver_options.nlp_solver_type}', file=f)
+    print(f'qp_solver_iter_max = {acados_solver1.acados_ocp.solver_options.qp_solver_iter_max}', file=f)
+    print(f'nlp_solver_max_iter = {acados_solver1.acados_ocp.solver_options.nlp_solver_max_iter}', file=f)
 
 Nsim = int(T * N / Tf)
 # initialize data structs
@@ -48,8 +76,8 @@ nu = 2
 simX = np.ndarray((Nsim, nx*2))
 simU = np.ndarray((Nsim, nu*2))
 simX_horizon = np.ndarray((Nsim, N, nx*2))
-simObs_position1 = np.ndarray((Nsim, 1, 4))
-simObs_position2 = np.ndarray((Nsim, 1, 4))
+simObs_position1 = np.ndarray((Nsim, 1, 8))
+simObs_position2 = np.ndarray((Nsim, 1, 8))
 s01 = x01[0]
 s02 = x02[0]
 tcomp_sum = 0
@@ -61,53 +89,71 @@ for i in range(Nsim):
     sref1 = s01 + sref_N1
     sref2 = s02 + sref_N2
     sref_obs1 = moving_obstacles1[0] + Tf*moving_obstacles1[3]
-    sref_obs2 = moving_obstacles2[0] + Tf*moving_obstacles2[3]
+    sref_obs2 = moving_obstacles1[4] + Tf*moving_obstacles1[7]
+    sref_obs3 = moving_obstacles2[0] + Tf*moving_obstacles2[3]
+    sref_obs4 = moving_obstacles2[4] + Tf*moving_obstacles2[7]
     for j in range(N):
-        yref = np.array([s01 + (sref1 - s01) * j / N, 0, 0, 0, 0])
+        yref = np.array([s01 + (sref1 - s01) * j / N, 0, 0, v1, 0])
         acados_solver1.set(j, "yref", yref)
-        yref = np.array([s02 + (sref2 - s02) * j / N, 0, 0, 0, 0])
+        yref = np.array([s02 + (sref2 - s02) * j / N, 0, 0, v2, 0])
         acados_solver2.set(j, "yref", yref)
 
-        p = np.zeros(12)
-        p[0:4] = np.copy(moving_obstacles1) 
-        p[4:8] = np.copy(moving_obstacles2)
-        p[8:11] = np.copy(x02)
-        p[11] = v2
+        p = np.zeros(20)
+        p[0:8] = np.copy(moving_obstacles1) 
+        p[8:16] = np.copy(moving_obstacles2)
+        p[16:19] = np.copy(x02)
+        p[19] = v2
         p[0] += (sref_obs1 - moving_obstacles1[0]) * j / N
-        p[4] += (sref_obs2 - moving_obstacles2[0]) * j / N
-        p[8] += (sref2 - s02) * j / N
+        p[4] += (sref_obs2 - moving_obstacles1[4]) * j / N
+        p[8] += (sref_obs3 - moving_obstacles2[0]) * j / N
+        p[12] += (sref_obs4 - moving_obstacles2[4]) * j / N
+        p[16] += (sref2 - s02) * j / N
         
         P = np.zeros_like(p)
         P[0], P[1] = path1.get_cartesian_coords(p[0], p[1])
         P[2] = path1.get_theta_r(p[0])
         P[3] = p[3]
-        P[4], P[5] = path2.get_cartesian_coords(p[4], p[5])
-        P[6] = path2.get_theta_r(p[4])
+        P[4], P[5] = path1.get_cartesian_coords(p[4], p[5])
+        P[6] = path1.get_theta_r(p[4])
         P[7] = p[7]
         P[8], P[9] = path2.get_cartesian_coords(p[8], p[9])
         P[10] = path2.get_theta_r(p[8])
         P[11] = p[11]
+        P[12], P[13] = path2.get_cartesian_coords(p[12], p[13])
+        P[14] = path2.get_theta_r(p[12])
+        P[15] = p[15]
+        P[16], P[17] = path2.get_cartesian_coords(p[16], p[17])
+        P[18] = path2.get_theta_r(p[16])
+        P[19] = p[19]
         acados_solver1.set(j, "p", P)
 
-        p = np.zeros(12)
-        p[0:4] = np.copy(moving_obstacles1) 
-        p[4:8] = np.copy(moving_obstacles2)
-        p[8:11] = np.copy(x01)
-        p[11] = v1
+        p = np.zeros(20)
+        p[0:8] = np.copy(moving_obstacles1) 
+        p[8:16] = np.copy(moving_obstacles2)
+        p[16:19] = np.copy(x01)
+        p[19] = v1
         p[0] += (sref_obs1 - moving_obstacles1[0]) * j / N
-        p[4] += (sref_obs2 - moving_obstacles2[0]) * j / N
-        p[8] += (sref1 - s01) * j / N
+        p[4] += (sref_obs2 - moving_obstacles1[4]) * j / N
+        p[8] += (sref_obs3 - moving_obstacles2[0]) * j / N
+        p[12] += (sref_obs4 - moving_obstacles2[4]) * j / N
+        p[16] += (sref1 - s01) * j / N
         
         P = np.zeros_like(p)
         P[0], P[1] = path1.get_cartesian_coords(p[0], p[1])
         P[2] = path1.get_theta_r(p[0])
         P[3] = p[3]
-        P[4], P[5] = path2.get_cartesian_coords(p[4], p[5])
-        P[6] = path2.get_theta_r(p[4])
+        P[4], P[5] = path1.get_cartesian_coords(p[4], p[5])
+        P[6] = path1.get_theta_r(p[4])
         P[7] = p[7]
-        P[8], P[9] = path1.get_cartesian_coords(p[8], p[9])
+        P[8], P[9] = path2.get_cartesian_coords(p[8], p[9])
         P[10] = path2.get_theta_r(p[8])
         P[11] = p[11]
+        P[12], P[13] = path2.get_cartesian_coords(p[12], p[13])
+        P[14] = path2.get_theta_r(p[12])
+        P[15] = p[15]
+        P[16], P[17] = path1.get_cartesian_coords(p[16], p[17])
+        P[18] = path1.get_theta_r(p[16])
+        P[19] = p[19]
         acados_solver2.set(j, "p", P)
 
     yref_N = np.array([sref1, 0, 0])
@@ -115,49 +161,62 @@ for i in range(Nsim):
     yref_N = np.array([sref2, 0, 0])
     acados_solver2.set(N, "yref", yref_N)
     
-    p = np.zeros(12)
-    p[0:4] = np.copy(moving_obstacles1) 
-    p[4:8] = np.copy(moving_obstacles2)
-    p[8:11] = np.copy(x02)
-    p[11] = v2
+    p = np.zeros(20)
+    p[0:8] = np.copy(moving_obstacles1) 
+    p[8:16] = np.copy(moving_obstacles2)
+    p[16:19] = np.copy(x02)
+    p[19] = v2
     p[0] = sref_obs1
     p[4] = sref_obs2
-    p[8] = sref2
+    p[8] = sref_obs3
+    p[12] = sref_obs4
+    p[16] = sref2
 
     P = np.zeros_like(p)
     P[0], P[1] = path1.get_cartesian_coords(p[0], p[1])
     P[2] = path1.get_theta_r(p[0])
     P[3] = p[3]
-    P[4], P[5] = path2.get_cartesian_coords(p[4], p[5])
-    P[6] = path2.get_theta_r(p[4])
+    P[4], P[5] = path1.get_cartesian_coords(p[4], p[5])
+    P[6] = path1.get_theta_r(p[4])
     P[7] = p[7]
     P[8], P[9] = path2.get_cartesian_coords(p[8], p[9])
     P[10] = path2.get_theta_r(p[8])
     P[11] = p[11]
-
+    P[12], P[13] = path2.get_cartesian_coords(p[12], p[13])
+    P[14] = path2.get_theta_r(p[12])
+    P[15] = p[15]
+    P[16], P[17] = path2.get_cartesian_coords(p[16], p[17])
+    P[18] = path2.get_theta_r(p[16])
+    P[19] = p[19]
     acados_solver1.set(N, "p", P)
 
-    
-    p = np.zeros(12)
-    p[0:4] = np.copy(moving_obstacles1) 
-    p[4:8] = np.copy(moving_obstacles2)
-    p[8:11] = np.copy(x01)
-    p[11] = v1
+    p = np.zeros(20)
+    p[0:8] = np.copy(moving_obstacles1) 
+    p[8:16] = np.copy(moving_obstacles2)
+    p[16:19] = np.copy(x01)
+    p[19] = v1
     p[0] = sref_obs1
     p[4] = sref_obs2
-    p[8] = sref1
-
+    p[8] = sref_obs3
+    p[12] = sref_obs4
+    p[16] = sref1
+    
     P = np.zeros_like(p)
     P[0], P[1] = path1.get_cartesian_coords(p[0], p[1])
     P[2] = path1.get_theta_r(p[0])
     P[3] = p[3]
-    P[4], P[5] = path2.get_cartesian_coords(p[4], p[5])
-    P[6] = path2.get_theta_r(p[4])
+    P[4], P[5] = path1.get_cartesian_coords(p[4], p[5])
+    P[6] = path1.get_theta_r(p[4])
     P[7] = p[7]
     P[8], P[9] = path2.get_cartesian_coords(p[8], p[9])
-    P[10] = path1.get_theta_r(p[8])
+    P[10] = path2.get_theta_r(p[8])
     P[11] = p[11]
-
+    P[12], P[13] = path2.get_cartesian_coords(p[12], p[13])
+    P[14] = path2.get_theta_r(p[12])
+    P[15] = p[15]
+    P[16], P[17] = path1.get_cartesian_coords(p[16], p[17])
+    P[18] = path1.get_theta_r(p[16])
+    P[19] = p[19]
     acados_solver1.set(N, "p", P)
 
     # solve ocp
@@ -209,13 +268,15 @@ for i in range(Nsim):
     simObs_position1[i, 0, :] = np.copy(moving_obstacles1)
     simObs_position2[i, 0, :] = np.copy(moving_obstacles2)
     moving_obstacles1[0] += (sref_obs1 - moving_obstacles1[0])/ N
-    moving_obstacles2[0] += (sref_obs2 - moving_obstacles2[0])/ N
+    moving_obstacles1[4] += (sref_obs2 - moving_obstacles1[4])/ N
+    moving_obstacles2[0] += (sref_obs3 - moving_obstacles2[0])/ N
+    moving_obstacles2[4] += (sref_obs4 - moving_obstacles2[4])/ N
     
-t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-time_now = datetime.datetime.now()
-folder = time_now.strftime("%Y_%m_%d_%H:%M:%S")
-os.mkdir('results/' + folder)
+with open('results/'+folder+'/data.txt', 'a') as f:
+    print(f'computation_time = {tcomp_sum}', file=f)
+
+t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
@@ -230,4 +291,4 @@ simX_horizon2 = simX_horizon[:, :, 3:]
 # THIS IS A BIT SLOW
 renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1, path1,
           simX2, simX2, simX_horizon2, fixed_obstacles2, simObs_position2, path2,
-          car_model1, t, folder)
+          car_model1, t, folder, h_cbf)

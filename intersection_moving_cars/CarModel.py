@@ -8,7 +8,7 @@ import scipy.linalg
 from Path import Path
 class CarModel:
 
-    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+    def __init__(self, path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
         self.path = path
         self.l1 = l1
         self.l2 = l2
@@ -16,10 +16,10 @@ class CarModel:
         self.other_path = other_path
         self.name = name
         self.other_obstacles = other_obstacles
-        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+        self.model = export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
 
 
-def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
 
     model_name = 'car_ode_'+name
 
@@ -87,9 +87,19 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
     y_obs3 = MX.sym('y_obs3')
     theta_obs3 = MX.sym('theta_obs3')
     v_obs3 = MX.sym('v_obs3')
+    x_obs4 = MX.sym('x_obs4')
+    y_obs4 = MX.sym('y_obs4')
+    theta_obs4 = MX.sym('theta_obs4')
+    v_obs4 = MX.sym('v_obs4')
+    x_obs5 = MX.sym('x_obs5')
+    y_obs5 = MX.sym('y_obs5')
+    theta_obs5 = MX.sym('theta_obs5')
+    v_obs5 = MX.sym('v_obs5')
     p = vertcat(x_obs1, y_obs1, theta_obs1, v_obs1,
                 x_obs2, y_obs2, theta_obs2, v_obs2,
-                x_obs3, y_obs3, theta_obs3, v_obs3)
+                x_obs3, y_obs3, theta_obs3, v_obs3,
+                x_obs4, y_obs4, theta_obs4, v_obs4,
+                x_obs5, y_obs5, theta_obs5, v_obs5)
     
     # dynamics
     f_expl = vertcat((v1  * cos(theta_tilde))/(1 - kapparef_s(s)*l),
@@ -127,8 +137,6 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
     
     x_t_plus_1 = x + f_expl*dT
 
-    gamma = 0.1
-
     thetar_car = thetarref_s(s)
     x_car = xref_s(s) - sin(thetar_car)*l
     y_car = yref_s(s) + cos(thetar_car)*l
@@ -142,8 +150,8 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
             o = other_obstacles[i]
             o = other_path.get_cartesian_coords(o[0], o[1])
             
-            h_t = ((x_car - o[0] )**4/(l1)**4) + ((y_car - o[1])**4/(l1)**4) - 1
-            h_t_plus_1 = ((x_car_1 - o[0])**4/(l1)**4) + ((y_car_1 - o[1])**4/(l1)**4) - 1
+            h_t = ((x_car - o[0] )**4/(l1)**4) + ((y_car - o[1])**4/(l1)**4) - h_cbf
+            h_t_plus_1 = ((x_car_1 - o[0])**4/(l1)**4) + ((y_car_1 - o[1])**4/(l1)**4) - h_cbf
             
             if model.con_h_expr is not None:
                 model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
@@ -154,8 +162,8 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
         for i in range(obs.shape[0]):
             o = path.get_cartesian_coords(obs[i, 0], obs[i, 1])
             
-            h_t = ((x_car - o[0] )**4/(l1)**4) + ((y_car - o[1])**4/(l1)**4) - 1
-            h_t_plus_1 = ((x_car_1 - o[0])**4/(l1)**4) + ((y_car_1 - o[1])**4/(l1)**4) - 1
+            h_t = ((x_car - o[0] )**4/(l1)**4) + ((y_car - o[1])**4/(l1)**4) - h_cbf
+            h_t_plus_1 = ((x_car_1 - o[0])**4/(l1)**4) + ((y_car_1 - o[1])**4/(l1)**4) - h_cbf
 
             if model.con_h_expr is None:
                 model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
@@ -163,26 +171,35 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstac
                 model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
 
-    h_t = ((x_car - x_obs1 )**4/(l1)**4) + ((y_car - y_obs1)**4/(l1)**4) - 1
-    h_t_plus_1 = ((x_car_1 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(l1)**4) + ((y_car_1 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(l1)**4) - 1
+    h_t = ((x_car - x_obs1 )**4/(l1)**4) + ((y_car - y_obs1)**4/(l1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_1 - (x_obs1+cos(theta_obs1)*v_obs1*dT))**4/(l1)**4) + ((y_car_1 - (y_obs1+sin(theta_obs1)*v_obs1*dT))**4/(l1)**4) - h_cbf
     if model.con_h_expr is None:
         model.con_h_expr = vertcat(h_t_plus_1 - h_t + gamma * h_t)
     else:
         model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car - x_obs2 )**4/(l1)**4) + ((y_car - y_obs2)**4/(l1)**4) - 1
-    h_t_plus_1 = ((x_car_1 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(l1)**4) + ((y_car_1 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(l1)**4) - 1
+    h_t = ((x_car - x_obs2 )**4/(l1)**4) + ((y_car - y_obs2)**4/(l1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_1 - (x_obs2+cos(theta_obs2)*v_obs2*dT))**4/(l1)**4) + ((y_car_1 - (y_obs2+sin(theta_obs2)*v_obs2*dT))**4/(l1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
 
-    h_t = ((x_car - x_obs3 )**4/(l1)**4) + ((y_car - y_obs3)**4/(l1)**4) - 1
-    h_t_plus_1 = ((x_car_1 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(l1)**4) + ((y_car_1 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(l1)**4) - 1
+    h_t = ((x_car - x_obs3 )**4/(l1)**4) + ((y_car - y_obs3)**4/(l1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_1 - (x_obs3+cos(theta_obs3)*v_obs3*dT))**4/(l1)**4) + ((y_car_1 - (y_obs3+sin(theta_obs3)*v_obs3*dT))**4/(l1)**4) - h_cbf
     model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
+
+    h_t = ((x_car - x_obs4 )**4/(l1)**4) + ((y_car - y_obs4)**4/(l1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_1 - (x_obs4+cos(theta_obs4)*v_obs4*dT))**4/(l1)**4) + ((y_car_1 - (y_obs4+sin(theta_obs4)*v_obs4*dT))**4/(l1)**4) - h_cbf
+    model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
+    
+    h_t = ((x_car - x_obs5 )**4/(l1)**4) + ((y_car - y_obs5)**4/(l1)**4) - h_cbf
+    h_t_plus_1 = ((x_car_1 - (x_obs5+cos(theta_obs5)*v_obs5*dT))**4/(l1)**4) + ((y_car_1 - (y_obs5+sin(theta_obs5)*v_obs5*dT))**4/(l1)**4) - h_cbf
+    model.con_h_expr = vertcat(model.con_h_expr, h_t_plus_1 - h_t + gamma * h_t)
+    
     return model
 
 
-def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name):
+def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf):
 
-    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+    model = export_car_ode_model(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
 
     x = model.x
     u = model.u
@@ -213,9 +230,9 @@ def export_car_ode_model_with_discrete_rk4(path, l1, l2, fixed_obstacles, other_
 
 
 
-def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N, Tf, n_lap, x0, name):
+def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N, Tf, n_lap, x0, name, gamma, h_cbf):
     dT = Tf/float(N)
-    car_model = CarModel(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name)
+    car_model = CarModel(path, l1, l2, fixed_obstacles, other_path, other_obstacles, dT, n_lap, name, gamma, h_cbf)
     model = car_model.model
     ocp = AcadosOcp()
     ocp.model = model
@@ -230,10 +247,10 @@ def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N
     ocp.dims.N = N
 
     # set cost
-    Q = np.diag([ 10, 1, 0])
-    R = np.eye(nu)*1e-1
+    Q = np.diag([ 100, 10, 10])
+    R = np.eye(nu)*10
 
-    Qe = np.diag([ 10, 1, 1])
+    Qe = np.diag([ 100, 10, 10])
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
@@ -259,7 +276,7 @@ def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N
     ocp.cost.yref = np.array([0, 0, 0, 0, 0])
     ocp.cost.yref_e = np.array([0, 0, 0])
 
-    ocp.parameter_values = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    ocp.parameter_values = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
     # setting constraints
     ocp.constraints.lbx = np.array([-2])
@@ -286,6 +303,8 @@ def create_problem(path, l1, l2, fixed_obstacles, other_path, other_obstacles, N
     ocp.solver_options.integrator_type = "DISCRETE"
     ocp.solver_options.sim_method_num_stages = 4
     ocp.solver_options.sim_method_num_steps = 3
+    #ocp.solver_options.qp_solver_iter_max = 800
+    #ocp.solver_options.nlp_solver_max_iter = 800
 
     # create solver
     acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_"+name+".json")

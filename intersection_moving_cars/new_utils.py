@@ -43,7 +43,7 @@ def drawCar(x, y, theta, X_horizon, car_model, path, color):
     (_x, _y, _theta) = transformProj2Orig(X_horizon[:,0], X_horizon[:,1], X_horizon[:,2], path)
     plt.plot(_x, _y, '-r', linewidth=0.5)
 
-def drawObstacles(obs, path, car_model):
+def drawObstacles(obs, path, car_model, h_cbf):
     obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
     h = car_model.l1
     h2 = car_model.l2
@@ -64,7 +64,7 @@ def drawObstacles(obs, path, car_model):
     X, Y = np.meshgrid(xrange,yrange)
     
     F = ((X-x)**4 / h**4 ) + ((Y-y)**4 / h**4)
-    plt.contour(X, Y, (F), [1], linestyles='dashed', linewidths=0.5, colors='blue')
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
 
 def savePlot(folder, i):
     plt.savefig('results/' + folder + "/%04d" % i +".png")
@@ -107,7 +107,7 @@ def drawPath(path, width):
 
 def renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1, path1,
                 simX2, simU2, simX_horizon2, fixed_obstacles2, simObs_position2, path2,
-                car_model, t, folder):
+                car_model, t, folder, h_cbf):
 
     # frame rate
     period = np.mean(np.diff(t))
@@ -142,22 +142,22 @@ def renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1,
 
         if fixed_obstacles1 is not None:
             for j in range(fixed_obstacles1.shape[0]):
-                drawObstacles(fixed_obstacles1[j], path1, car_model)
+                drawObstacles(fixed_obstacles1[j], path1, car_model, h_cbf)
         if fixed_obstacles2 is not None:
             for j in range(fixed_obstacles2.shape[0]):
-                drawObstacles(fixed_obstacles2[j], path2, car_model)
+                drawObstacles(fixed_obstacles2[j], path2, car_model, h_cbf)
         if simObs_position1 is not None:
             moving_obstacles = simObs_position1[i, 0, :]
             num_of_cars = int(moving_obstacles.shape[0]/4)
             moving_obstacles = moving_obstacles.reshape((num_of_cars, 4))
             for j in range(num_of_cars):
-                drawObstacles(moving_obstacles[j], path1, car_model)
+                drawObstacles(moving_obstacles[j], path1, car_model, h_cbf)
         if simObs_position2 is not None:
             moving_obstacles = simObs_position2[i, 0, :]
             num_of_cars = int(moving_obstacles.shape[0]/4)
             moving_obstacles = moving_obstacles.reshape((num_of_cars, 4))
             for j in range(num_of_cars):
-                drawObstacles(moving_obstacles[j], path2, car_model)
+                drawObstacles(moving_obstacles[j], path2, car_model, h_cbf)
         savePlot(folder, i)
         plt.close()
 
@@ -173,8 +173,10 @@ def plotRes(simX,simU,t):
     plt.subplot(2, 1, 1)
     plt.step(t, simU[:,0], color='r')
     plt.step(t, simU[:,1], color='g')
+    plt.step(t, simU[:,2], color='b')
+    plt.step(t, simU[:,3], color='c')
     plt.title('closed-loop simulation')
-    plt.legend(['v','w'])
+    plt.legend(['v1','w1', 'v2', 'w2'])
     plt.ylabel('u')
     plt.xlabel('t')
     plt.grid(True)
@@ -182,5 +184,5 @@ def plotRes(simX,simU,t):
     plt.plot(t, simX[:,:])
     plt.ylabel('x')
     plt.xlabel('t')
-    plt.legend(['s','l','theta_tilde'])
+    plt.legend(['s1','l1','theta_tilde1', 's2','l2','theta_tilde2'])
     plt.grid(True)
