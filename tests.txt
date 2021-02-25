@@ -23,8 +23,8 @@ intersection_moving_cars_sm (con RTI)
 # -----------> tutto pronto fino a qua
 
 # dinamico
-discreto
-continuo
+discreto (ostacoli fissi e mobili) con una sola gamma e Tf
+continuo (ostacoli fissi e mobili) con vari K (es. [-100,-100], [-0.5,-0.5],[-100,-1])
 
 # per tutti i test
 discretization step = 1/50
@@ -33,4 +33,9 @@ discretization step = 1/50
 (per i gain, valutare in base ai test)
 Q = np.diag([ 100, 10, 10])
 R = np.eye(nu)*10
+Qe = np.diag([ 100, 10, 10])
+
+(estensione dinamica)
+Q = np.diag([ 100, 10, 10])
+R = np.eye(nu)*1
 Qe = np.diag([ 100, 10, 10])
