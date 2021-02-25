@@ -11,7 +11,7 @@ import inspect
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 17.  # maximum simulation time[s]
+T = 30.  # maximum simulation time[s]
 v = 2.
 sref_N = Tf*v  # reference for final reference progress
 
@@ -26,11 +26,11 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
                             [30., -0.1, 0.],
                             [35., 0.1, 0.],
                             [41., -0.1, 0.]])
-fixed_obstacles = None#np.array([[25., 0.1, 0.], [35., -0.1, 0.]])
+fixed_obstacles = None#np.array([[5., 0.3, 0.], [15., -0.3, 0.]])
 
-moving_obstacles = np.array([5., 0.1, 0., 0., 15., -0.1, 0., 0.])
+moving_obstacles = np.array([5., 0.3, 0., 1., 15., -0.3, 0., 1.])
 
-K = [10, 30]
+K = [10000, 200]
 h_cbf = 3
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, n_lap, K, h_cbf)
 model = car_model.model
@@ -48,7 +48,7 @@ ocp.dims.N = N
 
 # set cost
 Q = np.diag([ 100, 10, 10])
-R = np.eye(nu)*10
+R = np.eye(nu)*1
 
 Qe = np.diag([ 100, 10, 10])
 
@@ -92,7 +92,7 @@ if model.con_h_expr is not None:
     ocp.constraints.uh = np.ones(model.con_h_expr.shape[0])*1e15
 
 # set intial condition
-x0=np.array([-0.0, 0.0, 0, 0, 0])
+x0=np.array([0.0, 0.0, 0, 0, 0])
 ocp.constraints.x0 = x0#[0., -1., 20.*np.pi/180.])
 
 # set QP solver and integration
