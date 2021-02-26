@@ -66,14 +66,14 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
     
     # this is an inset axes over the main axes
     a = plt.axes([.48, .78, .2, .2], facecolor='y')
-    a.set_ylabel('v')
+    a.set_ylabel('a')
     plt.plot(v)
     plt.ylim((-4, 4))
     plt.xticks([])
     #plt.yticks([])
 
     a = plt.axes([.78, .78, .2, .2], facecolor='y')
-    a.set_ylabel('omega')
+    a.set_ylabel('aw')
     plt.plot(w)
     plt.ylim((-2, 2))
     plt.xticks([])
