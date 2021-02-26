@@ -1,0 +1,21 @@
+# continuos_time_dynamic_exponential_cbf
+Tf = 1.5
+v = 2.0
+fixed_obstacles = None
+moving_obstacles = [ 5.   0.3  0.   0.  20.  -0.3  0.   0. ]
+x0 = [0. 0. 0. 0. 0.]
+K = [10000, 200]
+h_cbf = 3
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[1. 0.]
+ [0. 1.]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = PARTIAL_CONDENSING_HPIPM
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 50
+nlp_solver_max_iter = 100
+computation_time = 14.663449764251709
