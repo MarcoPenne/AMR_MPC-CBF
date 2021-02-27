@@ -17,4 +17,4 @@ qp_solver = PARTIAL_CONDENSING_HPIPM
 nlp_solver_type = SQP_RTI
 qp_solver_iter_max = 800
 nlp_solver_max_iter = 800
-computation_time = 151.94055104255676
+computation_time = 228.38076043128967
