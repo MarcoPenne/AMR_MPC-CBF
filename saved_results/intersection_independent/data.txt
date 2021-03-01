@@ -4,10 +4,12 @@ v1 = 2.0
 v2 = 1.5
 moving_obstacles1 = [14.64159265  0.3         0.          0.5        33.92477796  0.3
   0.          0.5       ]
-moving_obstacles2 = [ 1.5         0.3         0.          0.5        20.78318531 -0.3
+moving_obstacles2 = [20.78318531  0.3         0.          0.5        40.06637061 -0.3
   0.          0.5       ]
 x01 = [0. 0. 0.]
 x02 = [15.  0.  0.]
+gamma = 0.5
+h_cbf = 1.0
 Q = [[100.   0.   0.]
  [  0.  10.   0.]
  [  0.   0.  10.]]
@@ -20,4 +22,4 @@ qp_solver = PARTIAL_CONDENSING_HPIPM
 nlp_solver_type = SQP_RTI
 qp_solver_iter_max = 50
 nlp_solver_max_iter = 100
-computation_time = 168.41668057441711
+computation_time = 46.18100309371948
