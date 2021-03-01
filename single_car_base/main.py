@@ -29,7 +29,7 @@ fixed_obstacles = None
 
 moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
-gamma = 1
+gamma = 0.2
 h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
