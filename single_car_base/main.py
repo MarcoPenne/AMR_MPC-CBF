@@ -8,7 +8,7 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 5.  # prediction horizon
+Tf = 1.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
 T = 20.0  # maximum simulation time[s]
 v = 2.5
@@ -27,9 +27,9 @@ fixed_obstacles = np.array([[5., 0.2, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([5., 0.2, 0., 1., 20., -0.2, 0., 1.])
+moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
-gamma = 0.5
+gamma = 1
 h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
@@ -91,7 +91,7 @@ ocp.constraints.lh = np.zeros(model.con_h_expr.shape[0])
 ocp.constraints.uh = np.ones(model.con_h_expr.shape[0])*1e15
 
 # set intial condition
-x0 = np.array([0,0,0])
+x0 = np.array([ 0.5,  -1.2,  -1.39])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
