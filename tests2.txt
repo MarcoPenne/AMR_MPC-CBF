@@ -1,0 +1,19 @@
+convergence (come prima)
+
+# tutti su un pc
+single_car_base, no RTI, ostacoli fissi, stessi di prima + altre combinazioni
+
+single_car_base, RTI, ostacoli mobili, come prima
+continuos time (RTI), stessi ostacoli di sopra
+
+# confronto
+discrete_multiple_independent_cars con ostacoli fissi con una gamma (scelta prima)   (con RTI)
+discrete_multiple_autonomous_cars con stessi ostacoli fissi con una gamma (scelta prima)   (con RTI)
+
+# confronto stessi parametri
+intersection_moving_cars (con 4 ostacoli, da fare) (con RTI)
+intersection_moving_cars_sm (con RTI)
+
+# dinamico
+discreto (ostacoli fissi) con una sola gamma e Tf
+continuo (ostacoli fissi) con vari K (es. [-100,-100], [-0.1,-0.1])
