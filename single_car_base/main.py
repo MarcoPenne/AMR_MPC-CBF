@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 1.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 60.0  # maximum simulation time[s]
+T = 0.50  # maximum simulation time[s]
 v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
@@ -214,6 +214,7 @@ t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.eps")
+plt.savefig('results/' + folder + "/plots.png", dpi=300)
 #plt.show()
 
 # THIS IS A BIT SLOW
