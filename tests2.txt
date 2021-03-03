@@ -3,6 +3,7 @@ convergence (come prima)
 # tutti su un pc
 single_car_base, no RTI, ostacoli fissi, stessi di prima + altre combinazioni
 
+#confronto
 single_car_base, RTI, ostacoli mobili, come prima
 continuos time (RTI), stessi ostacoli di sopra
 
