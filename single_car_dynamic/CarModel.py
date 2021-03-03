@@ -98,7 +98,13 @@ def export_car_ode_model(path, l1, l2, fixed_obstacles, dT, n_lap, gamma, h_cbf)
             tmp_obs = fixed_obstacles
             obs = np.concatenate((obs, tmp_obs + lap_vector), axis=0)
 
-    x_t_plus_1 = x + f_expl*dT
+    #x_t_plus_1 = x + f_expl*dT
+    ode = Function('ode', [x, u], [f_expl])
+    k1 = ode(x,       u)
+    k2 = ode(x+dT/2*k1,u)
+    k3 = ode(x+dT/2*k2,u)
+    k4 = ode(x+dT*k3,  u)
+    x_t_plus_1 = x + dT/6 * (k1 + 2*k2 + 2*k3 + k4)
 
     for lap in range(0, n_lap):
         h_t = ((s - (s_obs1+lap*path.get_len()) )**4/(l1)**4) + ((l-l_obs1)**4/(l2)**4) - h_cbf
