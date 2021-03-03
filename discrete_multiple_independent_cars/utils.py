@@ -266,7 +266,6 @@ def plotRes(simX,simU,t):
     plt.subplot(2, 1, 1)
     plt.plot(t, simU[:,:])
     plt.ylabel(r'$u$')
-    plt.xlabel(r'$t$')
     plt.legend([r'$v_1$',r'$w_1$', r'$v_2$',r'$w_2$', r'$v_3$',r'$w_3$'])
 
     plt.grid(True)
