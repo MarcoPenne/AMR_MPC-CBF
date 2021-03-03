@@ -13,12 +13,12 @@ R = [[10  0]
 Qe = [[100   0   0]
  [  0  10   0]
  [  0   0  10]]
-qp_solver = PARTIAL_CONDENSING_HPIPM
-nlp_solver_type = SQP_RTI
+qp_solver = FULL_CONDENSING_QPOASES
+nlp_solver_type = SQP
 qp_solver_iter_max = 50
 nlp_solver_max_iter = 100
-min_time = 0.005582094192504883
-max_time = 0.019430875778198242
-mean_time = 0.007385176931108748
-std_time = 0.001795909880554291
-cost integral = 33.6184915553388
+min_time = 0.00803995132446289
+max_time = 0.17049336433410645
+mean_time = 0.024938170569283623
+std_time = 0.02336493956591635
+cost integral = 34.0362280397624
