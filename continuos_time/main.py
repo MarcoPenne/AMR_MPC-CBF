@@ -138,6 +138,8 @@ print(simObs_position.shape)
 s0 = 0
 tcomp_sum = 0
 tcomp_max = 0
+time_iterations = np.zeros(Nsim)
+cost_integral = 0
 
 # simulate
 for i in range(Nsim):
@@ -168,6 +170,7 @@ for i in range(Nsim):
         print("acados returned status {} in closed loop iteration {}.".format(status, i))
 
     elapsed = time.time() - t
+    time_iterations[i] = elapsed
 
     # manage timings
     tcomp_sum += elapsed
@@ -177,6 +180,7 @@ for i in range(Nsim):
     # get solution
     x0 = acados_solver.get(0, "x")
     u0 = acados_solver.get(0, "u")
+    cost_integral += np.matmul(u0, u0.T)*Tf / N
     for j in range(nx):
         simX[i, j] = x0[j]
     for j in range(nu):
@@ -194,12 +198,16 @@ for i in range(Nsim):
     moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
 
 with open('results/'+folder+'/data.txt', 'a') as f:
-    print(f'computation_time = {tcomp_sum}', file=f)
+    print(f'min_time = {np.min(time_iterations)}', file=f)
+    print(f'max_time = {np.max(time_iterations)}', file=f)
+    print(f'mean_time = {np.mean(time_iterations)}', file=f)
+    print(f'std_time = {np.std(time_iterations)}', file=f)
+    print(f'cost integral = {cost_integral}', file=f)
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
-plt.savefig('results/' + folder + "/plots.png")
+plt.savefig('results/' + folder + "/plots.eps")
 #plt.show()
 
 # THIS IS A BIT SLOW

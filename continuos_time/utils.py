@@ -66,24 +66,28 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
     
     # this is an inset axes over the main axes
     a = plt.axes([.48, .78, .2, .2], facecolor='y')
-    a.set_ylabel('v')
+    a.set_ylabel(r'$v$')
     plt.plot(v)
     plt.ylim((-4, 4))
     plt.xticks([])
     #plt.yticks([])
 
     a = plt.axes([.78, .78, .2, .2], facecolor='y')
-    a.set_ylabel('omega')
+    a.set_ylabel(r'$\omega$')
     plt.plot(w)
     plt.ylim((-2, 2))
     plt.xticks([])
     
     plt.savefig('results/' + folder + "/%04d" % i +".png")
-
+    if i==0:
+        plt.savefig('results/' + folder + "/%04d" % i +".eps")
     #plt.show()
     plt.close()
 
 def drawObstacles(obs, path, car_model, h_cbf):
+    s_obs = obs[0]
+    l_obs = obs[1]
+    theta_obs = obs[2]
     obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
     h = car_model.l1
     h2 = car_model.l2
@@ -97,12 +101,17 @@ def drawObstacles(obs, path, car_model, h_cbf):
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
     plt.gca().add_patch(t2)
 
-    delta = 0.025
-    xrange = np.arange(-4, 14, delta)
-    yrange = np.arange(-2, 12, delta)
-    X, Y = np.meshgrid(xrange,yrange)
-    
-    F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
+    delta = 0.1
+    srange = np.arange(0., path.get_len()*3, delta)
+    lrange = np.arange(-2, 2, delta)
+    S, L = np.meshgrid(srange,lrange)
+
+    F = (S-s_obs)**4/h**4 + (L-l_obs)**4/h2**4
+    X1, Y1 = np.vectorize(path)(S)
+    THETA_R = np.vectorize(path.get_theta_r)(S)
+    X = X1 - np.sin(THETA_R)*L
+    Y = Y1 + np.cos(THETA_R)*L
+    #F = ((np.cos(-theta)*(X-x)-np.sin(-theta)*(Y-y))**4 / h**4 ) + ((np.sin(-theta)*(X-x)+np.cos(-theta)*(Y-y))**4 / h2**4)
     plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
     
 def drawPath(path):
@@ -115,7 +124,7 @@ def drawPath(path):
     x = [c[0] for c in coord]
     y = [c[1] for c in coord]
 
-    plt.plot(x, y, '-y', linewidth=0.5)
+    plt.plot(x, y, '-y', linewidth=1.)
 
     inner_path = Path(path.l1, path.l2, path.r - 2)
     samples = np.arange(0., inner_path.get_len(), 0.1)
@@ -170,7 +179,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
         #plt.show()
     os.chdir('results/' + folder)
     os.system(f"ffmpeg -framerate {fr}"+" -i %04d.png -r 30 -pix_fmt yuv420p video.mp4")
-    for i in tqdm(range(len(x)), desc="Removing temp files"):
+    for i in tqdm(range(1, len(x)), desc="Removing temp files"):
         os.system('rm %04d.png' %i)
     os.chdir('../..')
 
@@ -182,13 +191,13 @@ def plotRes(simX,simU,t):
     plt.step(t, simU[:,0], color='r')
     plt.step(t, simU[:,1], color='g')
     plt.title('closed-loop simulation')
-    plt.legend(['v','w'])
-    plt.ylabel('u')
-    plt.xlabel('t')
+    plt.legend([r'$v$',r'$\omega$'])
+    plt.ylabel(r'$u$')
+    #plt.xlabel(r'$t$')
     plt.grid(True)
     plt.subplot(2, 1, 2)
     plt.plot(t, simX[:,:])
-    plt.ylabel('x')
-    plt.xlabel('t')
-    plt.legend(['s','l','theta_tilde'])
+    plt.ylabel(r'$x$')
+    plt.xlabel(r'$t$')
+    plt.legend([r'$s$',r'$l$',r'$\tilde{\theta}$'])
     plt.grid(True)
