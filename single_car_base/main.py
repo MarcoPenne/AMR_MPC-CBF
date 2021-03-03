@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 1.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 20.0  # maximum simulation time[s]
+T = 60.0  # maximum simulation time[s]
 v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
@@ -29,7 +29,7 @@ fixed_obstacles = None
 
 moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 
-gamma = 0.2
+gamma = 0.5
 h_cbf = 3.
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
@@ -96,16 +96,16 @@ ocp.constraints.x0 = x0
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
-ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
-#ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-ocp.solver_options.nlp_solver_type = "SQP"
+#ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
+ocp.solver_options.nlp_solver_type = "SQP_RTI"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "DISCRETE"
-ocp.solver_options.sim_method_num_stages = N
-ocp.solver_options.sim_method_num_steps = N
-ocp.solver_options.qp_solver_iter_max = 1000
-ocp.solver_options.nlp_solver_max_iter = 1000
-ocp.solver_options.regularize_method = "CONVEXIFY"
+#ocp.solver_options.sim_method_num_stages = N
+#ocp.solver_options.sim_method_num_steps = N
+#ocp.solver_options.qp_solver_iter_max = 1000
+#ocp.solver_options.nlp_solver_max_iter = 1000
+#ocp.solver_options.regularize_method = "CONVEXIFY"
 
 # create solver
 acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
@@ -140,6 +140,8 @@ print(simObs_position.shape)
 s0 = x0[0]
 tcomp_sum = 0
 tcomp_max = 0
+time_iterations = np.zeros(Nsim)
+cost_integral = 0
 
 # simulate
 for i in range(Nsim):
@@ -157,8 +159,6 @@ for i in range(Nsim):
         acados_solver.set(j, "yref", yref)
         acados_solver.set(j, "p", p)
 
-        acados_solver.print_statistics()
-
 
     yref_N = np.array([sref, 0, 0])
     p_N = np.array([sref_obs1, moving_obstacles[1], moving_obstacles[2], moving_obstacles[3], sref_obs2, moving_obstacles[5], moving_obstacles[6], moving_obstacles[7]])
@@ -174,6 +174,7 @@ for i in range(Nsim):
         print("acados returned status {} in closed loop iteration {}.".format(status, i))
 
     elapsed = time.time() - t
+    time_iterations[i] = elapsed
 
     # manage timings
     tcomp_sum += elapsed
@@ -183,6 +184,7 @@ for i in range(Nsim):
     # get solution
     x0 = acados_solver.get(0, "x")
     u0 = acados_solver.get(0, "u")
+    cost_integral += np.matmul(u0, u0.T)*Tf / N
     for j in range(nx):
         simX[i, j] = x0[j]
     for j in range(nu):
@@ -199,13 +201,19 @@ for i in range(Nsim):
     moving_obstacles[0] += (sref_obs1 - moving_obstacles[0])/ N
     moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
 
+
+
 with open('results/'+folder+'/data.txt', 'a') as f:
-    print(f'computation_time = {tcomp_sum}', file=f)
+    print(f'min_time = {np.min(time_iterations)}', file=f)
+    print(f'max_time = {np.max(time_iterations)}', file=f)
+    print(f'mean_time = {np.mean(time_iterations)}', file=f)
+    print(f'std_time = {np.std(time_iterations)}', file=f)
+    print(f'cost integral = {cost_integral}', file=f)
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
-plt.savefig('results/' + folder + "/plots.png")
+plt.savefig('results/' + folder + "/plots.eps")
 #plt.show()
 
 # THIS IS A BIT SLOW
