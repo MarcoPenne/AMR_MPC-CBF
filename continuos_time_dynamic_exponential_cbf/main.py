@@ -11,7 +11,7 @@ import inspect
 
 Tf = 1.5  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 30.  # maximum simulation time[s]
+T = 5.  # maximum simulation time[s]
 v = 2.
 sref_N = Tf*v  # reference for final reference progress
 
@@ -102,8 +102,8 @@ ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
 ocp.solver_options.nlp_solver_type = "SQP_RTI"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "ERK"
-ocp.solver_options.sim_method_num_stages = 4
-ocp.solver_options.sim_method_num_steps = 3
+ocp.solver_options.sim_method_num_stages = 15
+ocp.solver_options.sim_method_num_steps = 10
 
 # create solver
 acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
@@ -139,9 +139,13 @@ print(simObs_position.shape)
 s0 = 0
 tcomp_sum = 0
 tcomp_max = 0
+time_iterations = np.zeros(Nsim)
+cost_integral = 0
 
 # simulate
 for i in range(Nsim):
+    if i%20==0:
+        print(f"Iteration {i}/{Nsim}")
     # update reference
     sref = s0 + sref_N
     sref_obs1 = moving_obstacles[0] + Tf*moving_obstacles[3]
@@ -169,6 +173,7 @@ for i in range(Nsim):
         print("acados returned status {} in closed loop iteration {}.".format(status, i))
 
     elapsed = time.time() - t
+    time_iterations[i] = elapsed
 
     # manage timings
     tcomp_sum += elapsed
@@ -178,6 +183,7 @@ for i in range(Nsim):
     # get solution
     x0 = acados_solver.get(0, "x")
     u0 = acados_solver.get(0, "u")
+    cost_integral += np.matmul(u0, u0.T)*Tf / N
     for j in range(nx):
         simX[i, j] = x0[j]
     for j in range(nu):
@@ -195,12 +201,17 @@ for i in range(Nsim):
     moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
 
 with open('results/'+folder+'/data.txt', 'a') as f:
-    print(f'computation_time = {tcomp_sum}', file=f)
+    print(f'min_time = {np.min(time_iterations)}', file=f)
+    print(f'max_time = {np.max(time_iterations)}', file=f)
+    print(f'mean_time = {np.mean(time_iterations)}', file=f)
+    print(f'std_time = {np.std(time_iterations)}', file=f)
+    print(f'cost integral = {cost_integral}', file=f)
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
+plt.savefig('results/' + folder + "/plots.eps")
 #plt.show()
 
 # THIS IS A BIT SLOW
