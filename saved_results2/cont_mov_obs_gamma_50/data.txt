@@ -1,0 +1,24 @@
+# continuos_time
+Tf = 1.0
+v = 2.5
+moving_obstacles = [ 5.   0.1  0.   1.  15.  -0.1  0.   1. ]
+x0 = [ 0.5  -1.2  -1.39]
+gamma = gamma = lambda hx: 50*hx
+h_cbf = 3
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[10.  0.]
+ [ 0. 10.]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = PARTIAL_CONDENSING_HPIPM
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 50
+nlp_solver_max_iter = 100
+min_time = 0.0072650909423828125
+max_time = 0.02962350845336914
+mean_time = 0.009602413654327393
+std_time = 0.002070610407892331
+cost integral = 130.4167310679362
