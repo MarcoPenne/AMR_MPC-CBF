@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 60.  # maximum simulation time[s]
+T = 1.5  # maximum simulation time[s]
 v1 = 3.0
 v2 = 2.0
 v3 = 1.0
@@ -88,6 +88,10 @@ s02 = x02[0]
 s03 = x03[0]
 tcomp_sum = 0
 tcomp_max = 0
+time_iterations = np.zeros(Nsim)
+cost_integral1 = 0
+cost_integral2 = 0
+cost_integral3 = 0
 
 # simulate
 for i in range(Nsim):
@@ -145,7 +149,7 @@ for i in range(Nsim):
         
 
     elapsed = time.time() - t
-
+    time_iterations[i] = elapsed
     # manage timings
     tcomp_sum += elapsed
     if elapsed > tcomp_max:
@@ -158,7 +162,9 @@ for i in range(Nsim):
     u01 = acados_solver1.get(0, "u")
     u02 = acados_solver2.get(0, "u")
     u03 = acados_solver3.get(0, "u")
-    
+    cost_integral1 += np.matmul(u01, u01.T)*Tf / N
+    cost_integral2 += np.matmul(u02, u02.T)*Tf / N
+    cost_integral3 += np.matmul(u03, u03.T)*Tf / N
     for j in range(nx):
         simX[i, j] = x01[j]
     for j in range(nx):
@@ -201,14 +207,21 @@ for i in range(Nsim):
     #moving_obstacles[4] += (sref_obs2 - moving_obstacles[4])/ N
 
 with open('results/'+folder+'/data.txt', 'a') as f:
-    print(f'computation_time = {tcomp_sum}', file=f)
+    print(f'min_time = {np.min(time_iterations)}', file=f)
+    print(f'max_time = {np.max(time_iterations)}', file=f)
+    print(f'mean_time = {np.mean(time_iterations)}', file=f)
+    print(f'std_time = {np.std(time_iterations)}', file=f)
+    print(f'cost integral1 = {cost_integral1}', file=f)
+    print(f'cost integral2 = {cost_integral2}', file=f)
+    print(f'cost integral3 = {cost_integral3}', file=f)
 
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 
 plotRes(simX, simU, t)
-plt.savefig('results/' + folder + "/plots.png")
+plt.savefig('results/' + folder + "/plots.eps")
+plt.savefig('results/' + folder + "/plots.png", dpi=300)
 #plt.show()
 
 # THIS IS A BIT SLOW
