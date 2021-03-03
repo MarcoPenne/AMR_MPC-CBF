@@ -28,7 +28,7 @@ def transformProj2Orig(s, l, theta_tilde, path):
     return (X, Y, THETA)
 
 
-def drawCar(x, y, theta, X_horizon, car_model, path, color):
+def drawCar(x, y, theta, X_horizon, car_model, path, color, h_cbf):
 
     h = car_model.l1
     h2 = car_model.l2
@@ -42,6 +42,14 @@ def drawCar(x, y, theta, X_horizon, car_model, path, color):
 
     (_x, _y, _theta) = transformProj2Orig(X_horizon[:,0], X_horizon[:,1], X_horizon[:,2], path)
     plt.plot(_x, _y, '-r', linewidth=0.5)
+
+    delta = 0.1
+    xrange = np.arange(-4, 14, delta)
+    yrange = np.arange(-5.5, 12.5, delta)
+    X, Y = np.meshgrid(xrange,yrange)
+    
+    F = ((X-x)**4 / h**4 ) + ((Y-y)**4 / h**4)
+    plt.contour(X, Y, (F), [h_cbf], linestyles='dashed', linewidths=0.5, colors='blue')
 
 def drawObstacles(obs, path, car_model, h_cbf):
     obs = transformProj2Orig([obs[0]], [obs[1]], [obs[2]], path)
@@ -58,7 +66,7 @@ def drawObstacles(obs, path, car_model, h_cbf):
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green')
     plt.gca().add_patch(t2)
     
-    delta = 0.025
+    delta = 0.1
     xrange = np.arange(-4, 14, delta)
     yrange = np.arange(-5.5, 12.5, delta)
     X, Y = np.meshgrid(xrange,yrange)
@@ -68,6 +76,8 @@ def drawObstacles(obs, path, car_model, h_cbf):
 
 def savePlot(folder, i):
     plt.savefig('results/' + folder + "/%04d" % i +".png")
+    if i==0:
+        plt.savefig('results/' + folder + "/%04d" % i +".eps")
 
 def drawPath(path, width):
     samples = np.arange(0., path.get_len(), 0.1)
@@ -79,7 +89,7 @@ def drawPath(path, width):
     x = [c[0] for c in coord]
     y = [c[1] for c in coord]
 
-    plt.plot(x, y, '-y', linewidth=0.5)
+    plt.plot(x, y, '-y', linewidth=1.)
 
     inner_path = Path(path.l1, path.l2, path.r - width, traslx=path.traslx, trasly=path.trasly + width)
     samples = np.arange(0., inner_path.get_len(), 0.1)
@@ -135,10 +145,10 @@ def renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1,
         drawPath(path1, 2)
         drawPath(path2, 2)
         if simX1 is not None:
-            drawCar(x1[i], y1[i], theta1[i], simX_horizon1[i], car_model, path1, 'blue')
+            drawCar(x1[i], y1[i], theta1[i], simX_horizon1[i], car_model, path1, 'blue', h_cbf)
 
         if simX2 is not None:
-            drawCar(x2[i], y2[i], theta2[i], simX_horizon2[i], car_model, path2, 'yellow')
+            drawCar(x2[i], y2[i], theta2[i], simX_horizon2[i], car_model, path2, 'yellow', h_cbf)
 
         if fixed_obstacles1 is not None:
             for j in range(fixed_obstacles1.shape[0]):
@@ -163,7 +173,7 @@ def renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1,
 
     os.chdir('results/' + folder)
     os.system(f"ffmpeg -framerate {fr}"+" -i %04d.png -r 30 -pix_fmt yuv420p video.mp4")
-    for i in tqdm(range(len(t)), desc="Removing temp files"):
+    for i in tqdm(range(1, len(t)), desc="Removing temp files"):
         os.system('rm %04d.png' %i)
     os.chdir('../..')
 
@@ -176,13 +186,12 @@ def plotRes(simX,simU,t):
     plt.step(t, simU[:,2], color='b')
     plt.step(t, simU[:,3], color='c')
     plt.title('closed-loop simulation')
-    plt.legend(['v1','w1', 'v2', 'w2'])
+    plt.legend([r'$v_1$',r'$w_1$', r'$v_2$', r'$w_2$'])
     plt.ylabel('u')
-    plt.xlabel('t')
     plt.grid(True)
     plt.subplot(2, 1, 2)
     plt.plot(t, simX[:,:])
     plt.ylabel('x')
     plt.xlabel('t')
-    plt.legend(['s1','l1','theta_tilde1', 's2','l2','theta_tilde2'])
+    plt.legend([r'$s_1$',r'$l_1$',r'$\tilde{\theta}_1$', r'$s_2$',r'$l_2$',r'$\tilde{\theta}_2$'])
     plt.grid(True)
