@@ -1,6 +1,6 @@
 # single_car_base
 Tf = 1.0
-v = 2
+v = 2.0
 moving_obstacles = [20.   0.1  0.   1.  15.  -0.1  0.   1. ]
 x0 = [-1.          0.6         3.05432619]
 gamma = 0.5
@@ -13,12 +13,12 @@ R = [[10  0]
 Qe = [[100   0   0]
  [  0  10   0]
  [  0   0  10]]
-qp_solver = PARTIAL_CONDENSING_HPIPM
-nlp_solver_type = SQP_RTI
-qp_solver_iter_max = 50
-nlp_solver_max_iter = 100
-min_time = 0.0060007572174072266
-max_time = 0.029401063919067383
-mean_time = 0.008401820319039481
-std_time = 0.002168197167351619
-cost integral = 33.55475440064335
+qp_solver = FULL_CONDENSING_QPOASES
+nlp_solver_type = SQP
+qp_solver_iter_max = 800
+nlp_solver_max_iter = 800
+min_time = 0.008070945739746094
+max_time = 1.5494306087493896
+mean_time = 0.034922187668936594
+std_time = 0.09930448208372428
+cost integral = 34.13129242063388
