@@ -208,6 +208,8 @@ t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
 plotRes(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.eps")
+plt.savefig('results/' + folder + "/plots.png", dpi=300)
+
 #plt.show()
 
 # THIS IS A BIT SLOW
