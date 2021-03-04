@@ -1,0 +1,25 @@
+# single_car_base
+Tf = 1.0
+v = 2.5
+moving_obstacles = [ 5.   0.1  0.   1.  15.  -0.1  0.   1. ]
+x0 = [ 0.5  -1.2  -1.39]
+gamma = 0.5
+h_cbf = 3.0
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[10  0]
+ [ 0 10]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = PARTIAL_CONDENSING_HPIPM
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 50
+nlp_solver_max_iter = 100
+min_time = 0.001142740249633789
+max_time = 0.004883289337158203
+mean_time = 0.0017044639587402344
+std_time = 0.0005419494037049877
+cost integral = 126.39545697882495
+discretization step =0.1
