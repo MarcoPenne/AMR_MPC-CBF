@@ -103,7 +103,7 @@ def drawObstacles(obs, path, car_model, h_cbf):
     plt.gca().add_patch(t2)
     
     delta = 0.1
-    srange = np.arange(-5, path.get_len()*3, delta)
+    srange = np.arange(0, path.get_len()*3, delta)
     lrange = np.arange(-2, 2, delta)
     S, L = np.meshgrid(srange,lrange)
 
