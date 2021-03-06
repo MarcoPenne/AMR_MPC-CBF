@@ -1,0 +1,24 @@
+# single_car_base
+Tf = 1.0
+v = 2.5
+moving_obstacles = [ 5.   0.2  0.   0.  20.  -0.2  0.   0. ]
+x0 = [0. 0. 0.]
+gamma = 0.1
+h_cbf = 3.0
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[10  0]
+ [ 0 10]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = FULL_CONDENSING_QPOASES
+nlp_solver_type = SQP
+qp_solver_iter_max = 1000
+nlp_solver_max_iter = 1000
+min_time = 0.006067991256713867
+max_time = 0.741403341293335
+mean_time = 0.02958840084075928
+std_time = 0.04760720918579904
+cost integral = 134.92541482651845
