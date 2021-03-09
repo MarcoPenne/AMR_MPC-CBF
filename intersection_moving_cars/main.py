@@ -10,7 +10,7 @@ from new_utils import *
 
 Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 0.50  # maximum simulation time[s]
+T = 40  # maximum simulation time[s]
 v1 = 2.
 v2 = 1.5
 sref_N1 = Tf*v1  # reference for final reference progress
