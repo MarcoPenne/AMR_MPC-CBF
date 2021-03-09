@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 from utils import *
 import inspect
 
-Tf = 1.5  # prediction horizon
+Tf = 1.0  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 5.  # maximum simulation time[s]
-v = 2.
+T = 20.  # maximum simulation time[s]
+v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
 n_lap = 3
@@ -30,7 +30,7 @@ fixed_obstacles = None#np.array([[5., 0.3, 0.], [15., -0.3, 0.]])
 
 moving_obstacles = np.array([5., 0.3, 0., 1., 15., -0.3, 0., 1.])
 
-K = [10000, 200]
+K = [0.01, 0.2]
 h_cbf = 3
 car_model = CarModel(path, 1, 0.5, fixed_obstacles, n_lap, K, h_cbf)
 model = car_model.model
@@ -97,13 +97,15 @@ ocp.constraints.x0 = x0#[0., -1., 20.*np.pi/180.])
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
-# ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
-ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
+ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+#ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
 ocp.solver_options.nlp_solver_type = "SQP_RTI"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "ERK"
-ocp.solver_options.sim_method_num_stages = 15
-ocp.solver_options.sim_method_num_steps = 10
+ocp.solver_options.nlp_solver_max_iter = 1000
+ocp.solver_options.qp_solver_iter_max = 1000
+#ocp.solver_options.sim_method_num_stages = 15
+ocp.solver_options.sim_method_num_steps = N
 
 # create solver
 acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
@@ -209,10 +211,31 @@ with open('results/'+folder+'/data.txt', 'a') as f:
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-plotRes(simX, simU, t)
-plt.savefig('results/' + folder + "/plots.png")
+plotRes2(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.eps")
+plt.savefig('results/' + folder + "/plots.png", dpi=300)
+
+plotRes3(simX, simU, t)
+plt.savefig('results/' + folder + "/plots3.eps")
+plt.savefig('results/' + folder + "/plots3.png", dpi=300)
+
+plotResS(simX, simU, t)
+plt.savefig('results/' + folder + "/plotsS.eps")
+plt.savefig('results/' + folder + "/plotsS.png", dpi=300)
 #plt.show()
 
+with open('results/' + folder + "/simX.npy", 'wb') as f:
+    np.save(f, simX)
+with open('results/' + folder + "/simU.npy", 'wb') as f:
+    np.save(f, simU)
+with open('results/' + folder + "/simX_horizon.npy", 'wb') as f:
+    np.save(f, simX_horizon)
+with open('results/' + folder + "/t.npy", 'wb') as f:
+    np.save(f, t)
+with open('results/' + folder + "/fixed_obstacles.npy", 'wb') as f:
+    np.save(f, fixed_obstacles)
+with open('results/' + folder + "/simObs_position.npy", 'wb') as f:
+    np.save(f, simObs_position)
+
 # THIS IS A BIT SLOW
-renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf)
+#renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf)
