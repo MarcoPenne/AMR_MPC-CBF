@@ -185,8 +185,7 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
         os.system('rm %04d.png' %i)
     os.chdir('../..')
 
-
-def plotRes(simX,simU,t):
+def plotRes2(simX,simU,t):
     # plot results
     plt.figure()
     plt.subplot(2, 1, 1)
@@ -194,11 +193,47 @@ def plotRes(simX,simU,t):
     plt.step(t, simU[:,1], color='g')
     plt.title('closed-loop simulation')
     plt.legend([r'$a$',r'$a_w$'])
-    plt.ylabel('u')
+    plt.ylabel(r'$u$')
+    #plt.xlabel(r'$t$')
     plt.grid(True)
     plt.subplot(2, 1, 2)
-    plt.plot(t, simX[:,:])
-    plt.ylabel('x')
-    plt.xlabel('t')
-    plt.legend([r'$s$',r'$l$',r'$\tilde{\theta}$', r'$v$', r'$\omega$'])
+    plt.plot(t, simX[:,1:])
+    plt.ylabel(r'$x$')
+    plt.xlabel(r'$t$')
+    plt.legend([r'$l$',r'$\tilde{\theta}$', r'$v$', r'$\omega$'])
+    plt.grid(True)
+
+def plotResS(simX,simU,t):
+    # plot results
+    plt.figure()
+    plt.title('s coordinate')
+    plt.plot(t, simX[:,0], color='c')
+    plt.ylabel(r'$x$')
+    #plt.xlabel(r'$t$')
+    plt.legend([r'$s$'])
+    plt.grid(True)
+
+
+def plotRes3(simX,simU,t):
+    # plot results
+    plt.figure()
+    plt.subplot(3, 1, 1)
+    plt.step(t, simU[:,0], color='r')
+    plt.step(t, simU[:,1], color='g')
+    plt.title('closed-loop simulation')
+    plt.legend([r'$a$',r'$a_w$'])
+    plt.ylabel(r'$u$')
+    #plt.xlabel(r'$t$')
+    plt.grid(True)
+    plt.subplot(3, 1, 2)
+    plt.plot(t, simX[:,0], color='c')
+    plt.ylabel(r'$x$')
+    #plt.xlabel(r'$t$')
+    plt.legend([r'$s$'])
+    plt.grid(True)
+    plt.subplot(3, 1, 3)
+    plt.plot(t, simX[:,1:])
+    plt.ylabel(r'$x$')
+    plt.xlabel(r'$t$')
+    plt.legend([r'$l$',r'$\tilde{\theta}$', r'$v$', r'$\omega$'])
     plt.grid(True)
