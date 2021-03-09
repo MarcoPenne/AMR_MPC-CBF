@@ -1,0 +1,32 @@
+# discrete_multiple_independent_cars
+Tf = 2.0
+v1 = 3.0
+v2 = 2.0
+v3 = 1.0
+fixed_obstacles = [[ 6.   0.1  0. ]
+ [20.   0.2  0. ]
+ [35.   0.1  0. ]]
+x01 = [15.  0.  0.]
+x02 = [4.  0.5 0. ]
+x03 = [ 0.  -0.5  0. ]
+gamma = 0.5
+h_cbf = 5.0
+Q = [[100.   0.   0.]
+ [  0.  10.   0.]
+ [  0.   0.  10.]]
+R = [[10.  0.]
+ [ 0. 10.]]
+Q_e = [[100.   0.   0.]
+ [  0.  10.   0.]
+ [  0.   0.  10.]]
+qp_solver = PARTIAL_CONDENSING_HPIPM
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 50
+nlp_solver_max_iter = 100
+min_time = 0.09636402130126953
+max_time = 0.377216100692749
+mean_time = 0.11513322242101033
+std_time = 0.02048001864694882
+cost integral1 = 616.8926342934993
+cost integral2 = 228.0346533054065
+cost integral3 = 70.10467921354197

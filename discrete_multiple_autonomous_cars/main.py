@@ -10,7 +10,7 @@ from utils import *
 
 Tf = 2.  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 0.5  # maximum simulation time[s]
+T = 60.  # maximum simulation time[s]
 v1 = 3.
 v2 = 2.
 v3 = 1.
@@ -38,7 +38,7 @@ fixed_obstacles = np.array([[6., 0.1, 0.],
 
 #moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
 gamma = 0.5
-h_cbf = 3.
+h_cbf = 5.
 car_model = CarModel(path, 1., 0.5, fixed_obstacles, Tf/float(N), n_lap, gamma, h_cbf)
 model = car_model.model
 ocp = AcadosOcp()
@@ -240,10 +240,31 @@ with open('results/'+folder+'/data.txt', 'a') as f:
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-plotRes(simX, simU, t)
+plotRes2(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.eps")
-plt.savefig('results/' + folder + "/plots.png")
+plt.savefig('results/' + folder + "/plots.png", dpi=300)
+
+plotRes3(simX, simU, t)
+plt.savefig('results/' + folder + "/plots3.eps")
+plt.savefig('results/' + folder + "/plots3.png", dpi=300)
+
+plotResS(simX, simU, t)
+plt.savefig('results/' + folder + "/plotsS.eps")
+plt.savefig('results/' + folder + "/plotsS.png", dpi=300)
 #plt.show()
 
+with open('results/' + folder + "/simX.npy", 'wb') as f:
+    np.save(f, simX)
+with open('results/' + folder + "/simU.npy", 'wb') as f:
+    np.save(f, simU)
+with open('results/' + folder + "/simX_horizon.npy", 'wb') as f:
+    np.save(f, simX_horizon)
+with open('results/' + folder + "/t.npy", 'wb') as f:
+    np.save(f, t)
+with open('results/' + folder + "/fixed_obstacles.npy", 'wb') as f:
+    np.save(f, fixed_obstacles)
+#with open('results/' + folder + "/simObs_position.npy", 'wb') as f:
+#    np.save(f, simObs_position)
+
 # THIS IS A BIT SLOW
-renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, None, path, folder, h_cbf)
+#renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, None, path, folder, h_cbf)

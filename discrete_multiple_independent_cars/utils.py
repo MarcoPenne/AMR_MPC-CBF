@@ -258,20 +258,61 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
     os.chdir('../..')
 
 
-def plotRes(simX,simU,t):
+def plotRes2(simX,simU,t):
     # plot results
     plt.figure()
-    plt.title('closed-loop simulation')
-    
     plt.subplot(2, 1, 1)
     plt.plot(t, simU[:,:])
+    plt.title('closed-loop simulation')
+    plt.legend([r'$v_1$',r'$\omega_1$', r'$v_2$',r'$\omega_2$', r'$v_3$',r'$\omega_3$'])
     plt.ylabel(r'$u$')
-    plt.legend([r'$v_1$',r'$w_1$', r'$v_2$',r'$w_2$', r'$v_3$',r'$w_3$'])
-
+    #plt.xlabel(r'$t$')
     plt.grid(True)
     plt.subplot(2, 1, 2)
-    plt.plot(t, simX[:,:])
+    plt.plot(t, simX[:,1:3])
+    plt.plot(t, simX[:,4:6])
+    plt.plot(t, simX[:,7:9])
     plt.ylabel(r'$x$')
     plt.xlabel(r'$t$')
-    plt.legend([r'$s_1$',r'$l_1$',r'$\tilde{\theta}_1$', r'$s_2$',r'$l_2$',r'$\tilde{\theta}_2$', r'$s_3$',r'$l_3$',r'$\tilde{\theta}_3$'])
+    plt.legend([r'$l_1$',r'$\tilde{\theta}_1$',r'$l_2$',r'$\tilde{\theta}_2$', r'$l_3$',r'$\tilde{\theta}_3$'])
+    plt.grid(True)
+
+def plotResS(simX,simU,t):
+    # plot results
+    plt.figure()
+    plt.title('s coordinate')
+    plt.plot(t, simX[:,0])
+    plt.plot(t,simX[:,3])
+    plt.plot(t,simX[:,6])
+    plt.ylabel(r'$x$')
+    #plt.xlabel(r'$t$')
+    plt.legend([r'$s_1$',r'$s_2$',r'$s_3$'])
+    plt.grid(True)
+
+
+def plotRes3(simX,simU,t):
+    # plot results
+    plt.figure()
+    plt.subplot(3, 1, 1)
+    plt.plot(t, simU[:,:])
+    plt.title('closed-loop simulation')
+    plt.legend([r'$v_1$',r'$\omega_1$', r'$v_2$',r'$\omega_2$', r'$v_3$',r'$\omega_3$'])
+    plt.ylabel(r'$u$')
+    #plt.xlabel(r'$t$')
+    plt.grid(True)
+    plt.subplot(3, 1, 2)
+    plt.plot(t, simX[:,0])
+    plt.plot(t,simX[:,3])
+    plt.plot(t,simX[:,6])
+    plt.ylabel(r'$x$')
+    #plt.xlabel(r'$t$')
+    plt.legend([r'$s_1$',r'$s_2$',r'$s_3$'])
+    plt.grid(True)
+    plt.subplot(3, 1, 3)
+    plt.plot(t, simX[:,1:3])
+    plt.plot(t, simX[:,4:6])
+    plt.plot(t, simX[:,7:9])
+    plt.ylabel(r'$x$')
+    plt.xlabel(r'$t$')
+    plt.legend([r'$l_1$',r'$\tilde{\theta}_1$',r'$l_2$',r'$\tilde{\theta}_2$', r'$l_3$',r'$\tilde{\theta}_3$'])
     plt.grid(True)
