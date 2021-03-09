@@ -201,10 +201,35 @@ with open('results/'+folder+'/data.txt', 'a') as f:
     
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-plotRes(simX, simU, t)
+plotRes2(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.png")
 plt.savefig('results/' + folder + "/plots.eps")
 #plt.show()
+
+plotResS(simX, simU, t)
+plt.savefig('results/' + folder + "/plotsS.png")
+plt.savefig('results/' + folder + "/plotsS.eps")
+
+plotRes3(simX, simU, t)
+plt.savefig('results/' + folder + "/plot3.png")
+plt.savefig('results/' + folder + "/plot3.eps")
+
+with open('results/' + folder + "/simX.npy", 'wb') as f:
+    np.save(f, simX)
+with open('results/' + folder + "/simU.npy", 'wb') as f:
+    np.save(f, simU)
+with open('results/' + folder + "/simX_horizon.npy", 'wb') as f:
+    np.save(f, simX_horizon)
+with open('results/' + folder + "/t.npy", 'wb') as f:
+    np.save(f, t)
+with open('results/' + folder + "/fixed_obstacles1.npy", 'wb') as f:
+    np.save(f, fixed_obstacles1)
+with open('results/' + folder + "/fixed_obstacles2.npy", 'wb') as f:
+    np.save(f, fixed_obstacles2)
+with open('results/' + folder + "/simObs_position1.npy", 'wb') as f:
+    np.save(f, simObs_position1)
+with open('results/' + folder + "/simObs_position2.npy", 'wb') as f:
+    np.save(f, simObs_position2)
 
 simX1 = simX[:, :3]
 simX2 = simX[:, 3:]
@@ -213,6 +238,6 @@ simU2 = simU[:, 2:]
 simX_horizon1 = simX_horizon[:, :, :3]
 simX_horizon2 = simX_horizon[:, :, 3:]
 # THIS IS A BIT SLOW
-renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1, path1,
-          simX2, simX2, simX_horizon2, fixed_obstacles2, simObs_position2, path2,
-          car_model1, h_cbf, t, folder)
+# renderVideo(simX1, simU1, simX_horizon1, fixed_obstacles1, simObs_position1, path1,
+#           simX2, simX2, simX_horizon2, fixed_obstacles2, simObs_position2, path2,
+#           car_model1, h_cbf, t, folder)
