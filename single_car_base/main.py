@@ -8,9 +8,9 @@ import time
 import matplotlib.pyplot as plt
 from utils import *
 
-Tf = 1.  # prediction horizon
+Tf = 1.0  # prediction horizon
 N = int(Tf*50)  # number of discretization steps
-T = 0.50  # maximum simulation time[s]
+T = 20.0  # maximum simulation time[s]
 v = 2.5
 sref_N = Tf*v  # reference for final reference progress
 
@@ -27,7 +27,7 @@ fixed_obstacles = np.array([[5., 0.2, 0.],
                             [41., -0.1, 0.]])
 fixed_obstacles = None
 
-moving_obstacles = np.array([5., 0.1, 0., 1., 15., -0.1, 0., 1.])
+moving_obstacles = np.array([5., 0.2, 0., 0., 20., -0.2, 0., 0.])
 
 gamma = 0.5
 h_cbf = 3.
@@ -91,20 +91,20 @@ ocp.constraints.lh = np.zeros(model.con_h_expr.shape[0])
 ocp.constraints.uh = np.ones(model.con_h_expr.shape[0])*1e15
 
 # set intial condition
-x0 = np.array([ 0.5,  -1.2,  -1.39])
+x0 = np.array([ 0.,  0.,  0.])
 ocp.constraints.x0 = x0
 
 # set QP solver and integration
 ocp.solver_options.tf = Tf
-#ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
-ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
-ocp.solver_options.nlp_solver_type = "SQP_RTI"
+ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
+#ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
+ocp.solver_options.nlp_solver_type = "SQP"
 ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
 ocp.solver_options.integrator_type = "DISCRETE"
 #ocp.solver_options.sim_method_num_stages = N
 #ocp.solver_options.sim_method_num_steps = N
-#ocp.solver_options.qp_solver_iter_max = 1000
-#ocp.solver_options.nlp_solver_max_iter = 1000
+ocp.solver_options.qp_solver_iter_max = 1000
+ocp.solver_options.nlp_solver_max_iter = 1000
 #ocp.solver_options.regularize_method = "CONVEXIFY"
 
 # create solver
@@ -212,10 +212,31 @@ with open('results/'+folder+'/data.txt', 'a') as f:
 
 t = np.linspace(0.0, Nsim * Tf / N, Nsim)
 
-plotRes(simX, simU, t)
+plotRes2(simX, simU, t)
 plt.savefig('results/' + folder + "/plots.eps")
 plt.savefig('results/' + folder + "/plots.png", dpi=300)
+
+plotRes3(simX, simU, t)
+plt.savefig('results/' + folder + "/plots3.eps")
+plt.savefig('results/' + folder + "/plots3.png", dpi=300)
+
+plotResS(simX, simU, t)
+plt.savefig('results/' + folder + "/plotsS.eps")
+plt.savefig('results/' + folder + "/plotsS.png", dpi=300)
 #plt.show()
 
+with open('results/' + folder + "/simX.npy", 'wb') as f:
+    np.save(f, simX)
+with open('results/' + folder + "/simU.npy", 'wb') as f:
+    np.save(f, simU)
+with open('results/' + folder + "/simX_horizon.npy", 'wb') as f:
+    np.save(f, simX_horizon)
+with open('results/' + folder + "/t.npy", 'wb') as f:
+    np.save(f, t)
+with open('results/' + folder + "/fixed_obstacles.npy", 'wb') as f:
+    np.save(f, fixed_obstacles)
+with open('results/' + folder + "/simObs_position.npy", 'wb') as f:
+    np.save(f, simObs_position)
+
 # THIS IS A BIT SLOW
-renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf)
+#renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_position, path, folder, h_cbf)
