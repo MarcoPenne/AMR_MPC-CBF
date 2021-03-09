@@ -222,10 +222,14 @@ with open('results/' + folder + "/simX_horizon.npy", 'wb') as f:
     np.save(f, simX_horizon)
 with open('results/' + folder + "/t.npy", 'wb') as f:
     np.save(f, t)
-with open('results/' + folder + "/fixed_obstacles.npy", 'wb') as f:
-    np.save(f, fixed_obstacles)
-with open('results/' + folder + "/simObs_position.npy", 'wb') as f:
-    np.save(f, simObs_position)
+with open('results/' + folder + "/fixed_obstacles1.npy", 'wb') as f:
+    np.save(f, fixed_obstacles1)
+with open('results/' + folder + "/fixed_obstacles2.npy", 'wb') as f:
+    np.save(f, fixed_obstacles2)
+with open('results/' + folder + "/simObs_position1.npy", 'wb') as f:
+    np.save(f, simObs_position1)
+with open('results/' + folder + "/simObs_position2.npy", 'wb') as f:
+    np.save(f, simObs_position2)
 
 simX1 = simX[:, :3]
 simX2 = simX[:, 3:]
