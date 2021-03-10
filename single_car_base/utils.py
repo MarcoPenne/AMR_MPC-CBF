@@ -237,3 +237,30 @@ def plotRes3(simX,simU,t):
     plt.xlabel(r'$t$')
     plt.legend([r'$l$',r'$\tilde{\theta}$'])
     plt.grid(True)
+
+
+def loadData(folder,folder2,folder3,path):
+    with open(folder + "/simX.npy", 'rb') as f:
+        state=np.load(f)
+    with open(folder2 + "/simX.npy", 'rb') as f:
+        state2=np.load(f)
+    # with open(folder + "/fixed_obstacles.npy", 'rb') as f:
+    #     fixed_obs=np.load(f)
+    # with open(folder + "/simObs_position.npy", 'rb') as f:
+    #     mov_obs=np.load(f)
+
+    (X,Y,THETA)=transformProj2Orig(state[:,0],state[:,1],state[:,2],path)
+    (X1,Y1,THETA1)=transformProj2Orig(state2[:,0],state2[:,1],state2[:,2],path)
+    drawPath(path)
+    a,=plt.plot(X, Y, '--b', linewidth=1.5)
+    b,=plt.plot(X1, Y1, '--r', linewidth=1.5)
+    plt.legend((a,b),(r'$disc$',r'$cont$'))
+    plt.savefig(folder3 + "/plots3.eps")
+    plt.savefig(folder3 + "/plots3.png", dpi=300)
+
+
+
+
+    
+
+    
