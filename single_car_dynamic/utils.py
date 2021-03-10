@@ -56,9 +56,10 @@ def savePlot(x, y, theta, v, w, X_horizon, folder, i, car_model, fixed_obstacles
             obs = fixed_obstacles[o, :]
             drawObstacles(obs, path, car_model, h_cbf)
 
-    for o in range(moving_obstacles.shape[0]):
-        obs = moving_obstacles[o, :3]
-        drawObstacles(obs, path, car_model, h_cbf)
+    if moving_obstacles is not None:
+        for o in range(moving_obstacles.shape[0]):
+            obs = moving_obstacles[o, :3]
+            drawObstacles(obs, path, car_model, h_cbf)
 
     #for i in range(X_horizon.shape[0]):
     (_x, _y, _theta) = transformProj2Orig(X_horizon[:,0], X_horizon[:,1], X_horizon[:,2], path)
@@ -174,9 +175,11 @@ def renderVideo(simX, simU, simX_horizon, t, car_model, fixed_obstacles, simObs_
             v = v[-input_len:]
             w = w[-input_len:]
 
-        moving_obstacles = simObs_position[i, 0, :]
-        moving_obstacles = simObs_position[i]
-        moving_obstacles = moving_obstacles.reshape((2, 4))
+        moving_obstacles = None
+        if simObs_position is not None:
+            moving_obstacles = simObs_position[i, 0, :]
+            moving_obstacles = simObs_position[i]
+            moving_obstacles = moving_obstacles.reshape((2, 4))
         savePlot(x[i], y[i], theta[i], v, w, simX_horizon[i, :, :],folder, i, car_model, fixed_obstacles, moving_obstacles, path, h_cbf)
         #plt.show()
     os.chdir('results/' + folder)
