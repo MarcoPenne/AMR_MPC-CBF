@@ -1,0 +1,27 @@
+# continuos_time_dynamic_exponential_cbf
+Tf = 1.0
+v = 2.0
+fixed_obstacles = None
+moving_obstacles = [ 5.   0.3  0.   1.  15.  -0.3  0.   1. ]
+x0 = [0. 0. 0. 0. 0.]
+K = [225, 30]
+h_cbf = 3
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[1. 0.]
+ [0. 1.]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = FULL_CONDENSING_QPOASES
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 1000
+nlp_solver_max_iter = 1000
+sim_method_num_stages = 4
+sim_method_num_steps = 1
+min_time = 0.0017955303192138672
+max_time = 0.010149478912353516
+mean_time = 0.002504530191421509
+std_time = 0.001266228171552885
+cost integral = 15.024162500706442

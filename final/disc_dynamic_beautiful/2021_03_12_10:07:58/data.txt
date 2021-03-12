@@ -1,0 +1,26 @@
+# single_car_dynamic
+Tf = 1.0
+v = 2.0
+moving_obstacles = [ 5.   0.3  0.   1.  15.  -0.3  0.   1. ]
+x0 = [0 0 0 0 0]
+gamma = 0.3
+h_cbf = 3.0
+Q = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+R = [[1 0]
+ [0 1]]
+Qe = [[100   0   0]
+ [  0  10   0]
+ [  0   0  10]]
+qp_solver = FULL_CONDENSING_QPOASES
+nlp_solver_type = SQP_RTI
+qp_solver_iter_max = 1000
+nlp_solver_max_iter = 1000
+sim_method_num_stages = 4
+sim_method_num_steps = 1
+min_time = 0.0022330284118652344
+max_time = 0.010032415390014648
+mean_time = 0.0029346137046813965
+std_time = 0.0012394317972224938
+cost integral = 15.328138217286254
